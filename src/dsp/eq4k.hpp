@@ -17,7 +17,10 @@ namespace suite {
 
 class Eq4k {
 public:
-  void prepare(float sampleRate, int maxBlock) noexcept {
+  void prepare(float sampleRate, int maxBlock, int oversampleMode) noexcept {
+    // Configure the core's factor before prepare so its initial reported
+    // latency is already correct for the selected OS mode.
+    eq_.setOversampling(oversampleMode);
     eq_.prepare(static_cast<double>(sampleRate), maxBlock);
     configureFixed();
     eq_.reset();

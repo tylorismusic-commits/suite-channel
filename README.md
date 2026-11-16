@@ -24,6 +24,11 @@ manufacturer.
 *76Blue swaps the compressor panel to brushed silver and keeps the same
 control surface.*
 
+![Suite Channel in Black EQ mode](docs/suite-channel-black.png)
+
+*Black EQ voicing changes the LF knob fill from tan to black and switches the
+DSP to the Black law.*
+
 ## Signal flow
 
 ```

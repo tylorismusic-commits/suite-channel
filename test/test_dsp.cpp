@@ -1,5 +1,8 @@
 // Suite Channel — DSP smoke and static-curve tests
 // SPDX-License-Identifier: GPL-3.0-or-later
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -85,6 +88,17 @@ int main() {
   std::printf("76Blue GR at -6 dBFS: %.2f dB\n", meters.grDb);
   assert(meters.grDb > 0.5f);
 
+  // ... and back to VCA.
+  shared.set(suite::P_COMP_TYPE, 0.0);
+  engine.setControls(suite::controlsFrom(shared));
+  for (int block = 0; block < 20; ++block) {
+    fillSine(l, r, -6.0f, 1000.0f, block * 512);
+    engine.process(l.data(), r.data(), 512, meters);
+    assert(finite(l));
+    assert(finite(r));
+  }
+  assert(meters.grDb > 0.5f);
+
   // --- Gate: closed on a quiet signal, open on a loud one ------------------
   shared.set(suite::P_COMP_IN, 0.0);
   shared.set(suite::P_GATE_IN, 1.0);
@@ -107,6 +121,17 @@ int main() {
   }
   std::printf("gate GR on -6 dBFS: %.2f dB\n", meters.gateGrDb);
   assert(meters.gateGrDb < 1.0f);
+
+  // Expander mode should settle into a fixed 1:2 curve, not the gate floor.
+  shared.set(suite::P_GATE_MODE, 0.0);
+  shared.set(suite::P_GATE_RELEASE, 0.3);
+  engine.setControls(suite::controlsFrom(shared));
+  for (int block = 0; block < 60; ++block) {
+    fillSine(l, r, -30.0f, 1000.0f, block * 512);
+    engine.process(l.data(), r.data(), 512, meters);
+  }
+  std::printf("expander GR on -30 dBFS: %.2f dB\n", meters.gateGrDb);
+  assert(meters.gateGrDb > 2.0f && meters.gateGrDb < 20.0f);
 
   // --- EQ IN is a constant-latency crossfade -------------------------------
   const int latencyBefore = engine.latencySamples();
@@ -131,12 +156,82 @@ int main() {
     assert(finite(r));
   }
   shared.set(suite::P_COLOR_AMOUNT, 1.0);
-  engine.setControls(suite::controlsFrom(shared));
-  for (int block = 0; block < 20; ++block) {
-    fillSine(l, r, -20.0f, 1000.0f, block * 512);
-    engine.process(l.data(), r.data(), 512, meters);
-    assert(finite(l));
-    assert(finite(r));
+  for (int model = 0; model < 5; ++model) {
+    shared.set(suite::P_COLOR_MODEL, static_cast<double>(model));
+    engine.setControls(suite::controlsFrom(shared));
+    for (int block = 0; block < 4; ++block) {
+      fillSine(l, r, -20.0f, 1000.0f, block * 512);
+      engine.process(l.data(), r.data(), 512, meters);
+      assert(finite(l));
+      assert(finite(r));
+    }
+  }
+
+  // --- Oversampling modes load and stay finite -----------------------------
+  for (float os : {0.0f, 1.0f, 2.0f}) {
+    suite::Shared osShared;
+    suite::Engine osEngine;
+    suite::Meters osMeters;
+    osShared.set(suite::P_OVERSAMPLE, os);
+    osEngine.prepare(48000.0f, os);
+    osEngine.setControls(suite::controlsFrom(osShared));
+    std::vector<float> ol(512), orr(512);
+    fillSine(ol, orr, -20.0f, 1000.0f, 0);
+    osEngine.process(ol.data(), orr.data(), 512, osMeters);
+    assert(finite(ol));
+    assert(finite(orr));
+    std::printf("OS %.0f latency: %d\n", os, osEngine.latencySamples());
+  }
+
+  // --- Power bypass settles to the exact dry input -------------------------
+  {
+    suite::Shared dryShared;
+    suite::Engine dryEngine;
+    suite::Meters dryMeters;
+    dryEngine.prepare(48000.0f, 0.0f);
+    dryEngine.setControls(suite::controlsFrom(dryShared));
+    dryShared.set(suite::P_ENABLED, 0.0);
+    dryEngine.setControls(suite::controlsFrom(dryShared));
+    std::vector<float> dl(512), dr(512);
+    for (int block = 0; block < 100; ++block) {
+      fillConst(dl, dr, -12.0f);
+      dryEngine.process(dl.data(), dr.data(), 512, dryMeters);
+    }
+    assert(std::fabs(dl[511] - 0.2511886f) < 0.01f);
+  }
+
+  // --- Brown / Black must change the audio path, not just the UI ----------
+  {
+    suite::Controls brownControls;
+    brownControls.eqIn = true;
+    brownControls.lfGain = 0.9f;
+    brownControls.lfFreq = 0.36f;
+    brownControls.lfBell = true;
+    brownControls.colourAmount = 0.0f;
+    brownControls.eqType = 0;
+
+    suite::Eq4k brown;
+    suite::Eq4k black;
+    brown.prepare(48000.0f, 512, 2);
+    black.prepare(48000.0f, 512, 2);
+    brown.setControls(brownControls);
+    suite::Controls blackControls = brownControls;
+    blackControls.eqType = 1;
+    black.setControls(blackControls);
+
+    std::vector<float> bl(4096), br(4096), kl(4096), kr(4096);
+    fillSine(bl, br, -20.0f, 100.0f, 0);
+    fillSine(kl, kr, -20.0f, 100.0f, 0);
+    brown.processBlock(bl.data(), br.data(), 4096);
+    black.processBlock(kl.data(), kr.data(), 4096);
+
+    double diff = 0.0;
+    for (int i = 2048; i < 4096; ++i) {
+      diff += std::fabs(bl[i] - kl[i]);
+    }
+    diff /= 2048.0;
+    std::printf("Brown/Black LF average difference: %.6f\n", diff);
+    assert(diff > 1.0e-5);
   }
 
   assert(engine.latencySamples() >= 0);

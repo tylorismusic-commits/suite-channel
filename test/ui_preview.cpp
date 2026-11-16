@@ -8,7 +8,7 @@
 
 namespace {
 
-void render(const char* path, double scale, double compType) {
+void render(const char* path, double scale, double compType, double eqType) {
   const int w = static_cast<int>(suite::kPanelWidth * scale);
   const int h = static_cast<int>(suite::kPanelHeight * scale);
   cairo_surface_t* surface =
@@ -18,6 +18,7 @@ void render(const char* path, double scale, double compType) {
 
   suite::Shared shared;
   shared.set(suite::P_COMP_TYPE, compType);
+  shared.set(suite::P_EQ_TYPE, eqType);
   shared.grDb.store(8.0f);
   shared.gateGrDb.store(4.0f);
   shared.outPeakLDb.store(-6.0f);
@@ -38,9 +39,10 @@ void render(const char* path, double scale, double compType) {
 } // namespace
 
 int main() {
-  render("suite-channel.png", 1.0, 0.0);
-  render("suite-channel-76.png", 1.0, 1.0);
-  render("suite-channel-0.9x.png", 0.9, 0.0);
-  render("suite-channel@2x.png", 2.0, 0.0);
+  render("suite-channel.png", 1.0, 0.0, 0.0);
+  render("suite-channel-76.png", 1.0, 1.0, 0.0);
+  render("suite-channel-black.png", 1.0, 0.0, 1.0);
+  render("suite-channel-0.9x.png", 0.9, 0.0, 0.0);
+  render("suite-channel@2x.png", 2.0, 0.0, 0.0);
   return 0;
 }

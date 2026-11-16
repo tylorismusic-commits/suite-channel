@@ -75,7 +75,7 @@ struct KnobPalette {
 
 // Console-style fill colours: HF red, HMF green, LMF blue, LF amber; the
 // gate is green and the filters are the usual light grey.
-KnobPalette paletteFor(uint32_t param) {
+KnobPalette paletteFor(uint32_t param, bool blackEq) {
   switch (param) {
     case P_HF_GAIN:
     case P_HF_FREQ:
@@ -92,6 +92,9 @@ KnobPalette paletteFor(uint32_t param) {
     case P_LF_GAIN:
     case P_LF_FREQ:
     case P_LF_BELL:
+      if (blackEq) {
+        return {{0.13, 0.13, 0.14}, {0.035, 0.035, 0.045}, {0.88, 0.88, 0.86}};
+      }
       return {{0.64, 0.42, 0.16}, {0.28, 0.16, 0.05}, {1.0, 0.92, 0.78}};
     case P_GATE_THRESHOLD:
     case P_GATE_RANGE:
@@ -276,6 +279,8 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   const int colour = currentColour(shared);
   const int compType = std::clamp(static_cast<int>(shared.get(P_COMP_TYPE) + 0.5), 0, 1);
   const bool silverComp = compType == 1;
+  const bool blackEq =
+      std::clamp(static_cast<int>(shared.get(P_EQ_TYPE) + 0.5), 0, 1) == 1;
 
   auto knob = [&](uint32_t param, double x, double y, double r,
                   const char* label, std::vector<const char*> scale,
@@ -418,8 +423,11 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
   // LF.
   knob(P_LF_GAIN, 330, 664, 28, "LF", sc(kScaleGain), true, 1.35);
+  widgets_.back().blackEq = blackEq;
   knob(P_LF_FREQ, 405, 664, 22, "FREQ", sc(kScaleFreqLF), true, 1.30);
+  widgets_.back().blackEq = blackEq;
   pill(P_LF_BELL, 450, 728, 52, 22, "BELL");
+  widgets_.back().blackEq = blackEq;
 
   // Output fader.
   {
@@ -640,6 +648,8 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   const Skin skin = skinFor(currentColour(shared));
   const int compType =
       std::clamp(static_cast<int>(shared.get(P_COMP_TYPE) + 0.5), 0, 1);
+  const bool blackEq =
+      std::clamp(static_cast<int>(shared.get(P_EQ_TYPE) + 0.5), 0, 1) == 1;
 
   // Faceplate.
   cairo_pattern_t* pat = cairo_pattern_create_linear(0, 116, 0, 884);
@@ -749,10 +759,13 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
 
   // EQ band accents and labels.
   const char* bandNames[4] = {"HF", "HMF", "LMF", "LF"};
-  const Rgb bandCols[4] = {{0.90, 0.36, 0.30},
-                           {0.35, 0.78, 0.42},
-                           {0.36, 0.62, 0.92},
-                           {0.86, 0.58, 0.28}};
+  Rgb bandCols[4] = {{0.90, 0.36, 0.30},
+                     {0.35, 0.78, 0.42},
+                     {0.36, 0.62, 0.92},
+                     {0.86, 0.58, 0.28}};
+  if (blackEq) {
+    bandCols[3] = {0.55, 0.56, 0.58};
+  }
   const double bandY[4] = {164.0, 316.0, 468.0, 620.0};
   for (int i = 0; i < 4; ++i) {
     setRgb(cr, bandCols[i], 0.9);
@@ -889,7 +902,7 @@ void Panel::drawWidget(cairo_t* cr, const Widget& w, const Shared& shared,
 
 void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
   const Skin skin = skinFor(1);
-  const KnobPalette pal = paletteFor(w.param);
+  const KnobPalette pal = paletteFor(w.param, w.blackEq);
   const Rgb legend = w.onSilver ? Rgb{0.13, 0.14, 0.15} : skin.legend;
   const Rgb legendDim = w.onSilver ? Rgb{0.30, 0.31, 0.33} : skin.legendDim;
   const double cx = w.x;

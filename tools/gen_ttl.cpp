@@ -279,16 +279,23 @@ std::string buildManifestTtl() {
   out << "    lv2:optionalFeature ui:scaleFactor , ui:idleInterface , ui:resize ;\n";
   out << "    lv2:extensionData ui:idleInterface ;\n";
   out << "    ui:portNotification\n";
-  out << "        [ ui:plugin <" << kUri
-      << "> ; ui:symbol \"gr_meter\" ; ui:protocol ui:floatProtocol ] ,\n";
-  out << "        [ ui:plugin <" << kUri
-      << "> ; ui:symbol \"out_peak_l\" ; ui:protocol ui:floatProtocol ] ,\n";
-  out << "        [ ui:plugin <" << kUri
-      << "> ; ui:symbol \"out_peak_r\" ; ui:protocol ui:floatProtocol ] ,\n";
-  out << "        [ ui:plugin <" << kUri
-      << "> ; ui:symbol \"in_peak_l\" ; ui:protocol ui:floatProtocol ] ,\n";
-  out << "        [ ui:plugin <" << kUri
-      << "> ; ui:symbol \"in_peak_r\" ; ui:protocol ui:floatProtocol ] ;\n";
+  bool firstPort = true;
+  for (uint32_t id = 0; id < suite::P_COUNT; ++id) {
+    if (!firstPort) {
+      out << " ,\n";
+    }
+    firstPort = false;
+    out << "        [ ui:plugin <" << kUri << "> ; ui:symbol \""
+        << suite::kParamSpecs[id].symbol
+        << "\" ; ui:protocol ui:floatProtocol ]";
+  }
+  const char* const meters[] = {"gr_meter", "out_peak_l", "out_peak_r",
+                                "in_peak_l", "in_peak_r"};
+  for (const char* meter : meters) {
+    out << " ,\n        [ ui:plugin <" << kUri << "> ; ui:symbol \""
+        << meter << "\" ; ui:protocol ui:floatProtocol ]";
+  }
+  out << " ;\n";
   out << "    rdfs:seeAlso <suite_channel.ttl> .\n";
   return out.str();
 }

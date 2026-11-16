@@ -30,7 +30,8 @@ public:
     if (oversampleMode >= 0.0f) {
       controls_.oversample = oversampleMode;
     }
-    eq_.prepare(baseRate_, 4096);
+    eq_.prepare(baseRate_, 4096,
+                static_cast<int>(controls_.oversample + 0.5f));
     colour_.prepare(baseRate_);
     gate_.prepare(baseRate_);
     vca_.prepare(baseRate_);

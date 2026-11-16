@@ -97,6 +97,7 @@ private:
     std::vector<const char*> scale;
     bool labelBelow = false;
     bool onSilver = false;
+    bool blackEq = false;
     std::vector<const char*> buttonText;
   };
 
