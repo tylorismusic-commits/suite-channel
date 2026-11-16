@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.2.0 — 2026-11-16
+
+- Gate **HOLD**: 0 / 50 / 100 / 200 / 400 / 500 ms, shown as a compact pill
+  that cycles on click and accepts typed values.
+- Gate **DUCK** mode: attenuates material above the threshold, with the same
+  range, release and fast-attack controls. A patched external sidechain keys
+  gate and ducker detection.
+- Gate detector now uses a fast peak envelope, fixing zero-crossing chatter and
+  making ducker gain reduction stable.
+- Output **LIMIT** pill switches the −0.2 dBFS safety ceiling on or off.
+- Typed value entry: right-click any knob, fader or the HOLD pill; Enter
+  applies, Esc cancels, Backspace edits. Accepts units and `on`/`off`.
+- Double-click a knob or fader to restore its default.
+- Dragging a control shows an exact value bubble.
+- **A / B / COPY** compare controls in the header (editor-local, not saved in
+  host state).
+- CLAP and LV2 editors route key events for text entry.
+- CLAP state loading accepts states saved with the original 36 parameters.
+- Parameter count is now 38; LV2 meter port indices follow automatically.
+
 ## 0.1.6 — 2026-11-16
 
 - Output fader unity moved to **3/4 travel**. Top is **+12 dB**, bottom is

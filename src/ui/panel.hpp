@@ -4,6 +4,7 @@
 
 #include <cairo.h>
 
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,13 @@ struct PanelState {
   float outPeakHold = 0.0f;
   float grDb = 0.0f;
   float gateGrDb = 0.0f;
+
+  // Editor-local A/B compare slots.
+  bool aValid = false;
+  bool bValid = false;
+  int activeAB = 0;
+  double aValues[P_COUNT] = {};
+  double bValues[P_COUNT] = {};
 };
 
 class Panel {
@@ -53,6 +61,13 @@ public:
   void drawPresetList(cairo_t* cr, const Shared& shared,
                       const PanelState& state) const;
   bool wheel(Shared& shared, PanelState& state, double x, double y, double dy);
+
+  // Right-click opens a typed-value editor; Enter applies, Escape cancels.
+  void beginTextEntry(Shared& shared, PanelState& state, double x, double y);
+  static constexpr int kTextEnter = 1;
+  static constexpr int kTextEscape = 2;
+  static constexpr int kTextBackspace = 3;
+  bool textKey(Shared& shared, PanelState& state, int key, char ch);
 
   bool dragging() const { return dragParam_ >= 0; }
   void markEdited(PanelState& state) const { state.presetDirty = true; }
@@ -80,6 +95,9 @@ private:
     Pill,
     Cycle,
     Fader,
+    AB,
+    Copy,
+    Hold,
   };
 
   struct Widget {
@@ -116,8 +134,14 @@ private:
   void drawLevelMeter(cairo_t* cr, double x, double y, double w, double h,
                       double dbL, double dbR, double minDb, double maxDb,
                       bool labelsRight) const;
+  void drawValueBubble(cairo_t* cr, uint32_t param, double value) const;
+  void drawTextEntry(cairo_t* cr, const Shared& shared) const;
   void text(cairo_t* cr, const char* s, double x, double y, double size,
             int align, double r, double g, double b) const;
+
+  void applyAB(Shared& shared, PanelState& state, int target) const;
+  void copyAB(Shared& shared, PanelState& state) const;
+  bool commitTextEntry(Shared& shared, PanelState& state);
 
   double knobValue(const Shared& shared, const Widget& w) const;
   bool isLit(const Shared& shared, const Widget& w) const;
@@ -129,6 +153,15 @@ private:
   double dragStartY_ = 0.0;
   double dragStartValue_ = 0.0;
   int dragSteps_ = 0;
+
+  double mouseX_ = 0.0;
+  double mouseY_ = 0.0;
+  std::chrono::steady_clock::time_point lastClickTime_{};
+  uint32_t lastClickParam_ = 0xffffffffu;
+
+  bool editing_ = false;
+  uint32_t editParam_ = 0;
+  std::string editText_;
 
   cairo_surface_t* grain_ = nullptr;
   void* ft_ = nullptr;

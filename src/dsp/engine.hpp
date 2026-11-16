@@ -80,8 +80,6 @@ public:
   void process(float* left, float* right, int frames, Meters& meters,
                const float* scLeft = nullptr,
                const float* scRight = nullptr) noexcept {
-    (void)scLeft;
-    (void)scRight;
     meters = Meters{};
 
     float inPeakL = 0.0f;
@@ -95,6 +93,9 @@ public:
       const int n = std::min(kMaxBlock, frames - start);
       float* l = left + start;
       float* r = right + start;
+      const float* scL = scLeft ? scLeft + start : nullptr;
+      const float* scR = scRight ? scRight + start : nullptr;
+      const bool scActive = scL && scR;
       for (int i = 0; i < n; ++i) {
         dryL_[i] = l[i];
         dryR_[i] = r[i];
@@ -115,7 +116,9 @@ public:
         colour_.process(xl, xr);
 
         if (!controls_.dynPost) {
-          const float gateGr = processDynamics(xl, xr);
+          const float gateGr =
+              processDynamics(xl, xr, scL ? scL[i] : 0.0f,
+                              scR ? scR[i] : 0.0f, scActive);
           gateGrMax = std::max(gateGrMax, gateGr);
           grMax = std::max(grMax, lastCompGr_);
         }
@@ -146,7 +149,9 @@ public:
 
       if (controls_.dynPost) {
         for (int i = 0; i < n; ++i) {
-          const float gateGr = processDynamics(l[i], r[i]);
+          const float gateGr =
+              processDynamics(l[i], r[i], scL ? scL[i] : 0.0f,
+                              scR ? scR[i] : 0.0f, scActive);
           gateGrMax = std::max(gateGrMax, gateGr);
           grMax = std::max(grMax, lastCompGr_);
         }
@@ -157,8 +162,10 @@ public:
         const float en = enableSmooth_.next();
         float yl = l[i] * outGain;
         float yr = r[i] * outGain;
-        yl = safetyClip(yl);
-        yr = safetyClip(yr);
+        if (controls_.limiterOn) {
+          yl = safetyClip(yl);
+          yr = safetyClip(yr);
+        }
         l[i] = dryL_[i] + en * (yl - dryL_[i]);
         r[i] = dryR_[i] + en * (yr - dryR_[i]);
         outPeakL = std::max(outPeakL, std::fabs(l[i]));
@@ -212,10 +219,11 @@ private:
   }
 
   // Returns gate GR in dB for this frame; updates lastCompGr_.
-  float processDynamics(float& l, float& r) noexcept {
+  float processDynamics(float& l, float& r, float scL, float scR,
+                        bool scActive) noexcept {
     float gateGr = 0.0f;
     if (controls_.gateIn) {
-      gateGr = gate_.process(l, r);
+      gateGr = gate_.process(l, r, scL, scR, scActive);
     }
     if (!controls_.compIn) {
       lastCompGr_ = 0.0f;

@@ -139,6 +139,106 @@ int main() {
   std::printf("expander GR on -30 dBFS: %.2f dB\n", meters.gateGrDb);
   assert(meters.gateGrDb > 2.0f && meters.gateGrDb < 20.0f);
 
+  // --- Gate hold keeps the gate open after the signal falls ----------------
+  {
+    suite::Shared holdShared;
+    suite::Engine holdEngine;
+    suite::Meters holdMeters;
+    holdShared.set(suite::P_COMP_IN, 0.0);
+    holdShared.set(suite::P_GATE_IN, 1.0);
+    holdShared.set(suite::P_GATE_MODE, 1.0);
+    holdShared.set(suite::P_GATE_THRESHOLD, (-20.0 + 30.0) / 40.0);
+    holdShared.set(suite::P_GATE_RANGE, 1.0);
+    holdShared.set(suite::P_GATE_RELEASE, 0.0);  // 100 ms
+    holdShared.set(suite::P_GATE_HOLD, 0.5);     // 250 ms
+    holdEngine.prepare(48000.0f, 0.0f);
+    holdEngine.setControls(suite::controlsFrom(holdShared));
+    std::vector<float> hl(512), hr(512);
+
+    for (int block = 0; block < 20; ++block) {
+      fillSine(hl, hr, -6.0f, 1000.0f, block * 512);
+      holdEngine.process(hl.data(), hr.data(), 512, holdMeters);
+    }
+    assert(holdMeters.gateGrDb < 1.0f);
+
+    // 4000 samples ≈ 83 ms of silence: well inside the 250 ms hold.
+    for (int block = 0; block < 7; ++block) {
+      fillSine(hl, hr, -45.0f, 1000.0f, block * 512);
+      holdEngine.process(hl.data(), hr.data(), 512, holdMeters);
+    }
+    std::printf("gate GR after 83 ms of silence with 250 ms hold: %.2f dB\n",
+                holdMeters.gateGrDb);
+    assert(holdMeters.gateGrDb < 6.0f);
+
+    // Once the hold expires the gate closes.
+    for (int block = 0; block < 60; ++block) {
+      fillSine(hl, hr, -45.0f, 1000.0f, block * 512);
+      holdEngine.process(hl.data(), hr.data(), 512, holdMeters);
+    }
+    std::printf("gate GR after the hold expires: %.2f dB\n",
+                holdMeters.gateGrDb);
+    assert(holdMeters.gateGrDb > 30.0f);
+  }
+
+  // --- Ducker attenuates loud material above the threshold ----------------
+  {
+    suite::Shared duckShared;
+    suite::Engine duckEngine;
+    suite::Meters duckMeters;
+    duckShared.set(suite::P_COMP_IN, 0.0);
+    duckShared.set(suite::P_GATE_IN, 1.0);
+    duckShared.set(suite::P_GATE_MODE, 2.0);
+    duckShared.set(suite::P_GATE_THRESHOLD, (-20.0 + 30.0) / 40.0);
+    duckShared.set(suite::P_GATE_RANGE, 1.0);
+    duckShared.set(suite::P_GATE_RELEASE, 0.0);
+    duckEngine.prepare(48000.0f, 0.0f);
+    duckEngine.setControls(suite::controlsFrom(duckShared));
+    std::vector<float> dl(512), dr(512);
+
+    for (int block = 0; block < 60; ++block) {
+      fillSine(dl, dr, -45.0f, 1000.0f, block * 512);
+      duckEngine.process(dl.data(), dr.data(), 512, duckMeters);
+    }
+    std::printf("ducker GR on -45 dBFS: %.2f dB\n", duckMeters.gateGrDb);
+    assert(duckMeters.gateGrDb < 1.0f);
+
+    for (int block = 0; block < 60; ++block) {
+      fillSine(dl, dr, -6.0f, 1000.0f, block * 512);
+      duckEngine.process(dl.data(), dr.data(), 512, duckMeters);
+    }
+    std::printf("ducker GR on -6 dBFS: %.2f dB\n", duckMeters.gateGrDb);
+    assert(duckMeters.gateGrDb > 30.0f);
+  }
+
+  // --- Output limiter is a real switch ------------------------------------
+  {
+    auto measure = [](bool limiterOn) {
+      suite::Shared s;
+      suite::Engine e;
+      suite::Meters m;
+      s.set(suite::P_COMP_IN, 0.0);
+      s.set(suite::P_GATE_IN, 0.0);
+      s.set(suite::P_EQ_IN, 0.0);
+      s.set(suite::P_COLOR_AMOUNT, 0.0);
+      s.set(suite::P_OUTPUT, 1.0);  // +12 dB
+      s.set(suite::P_LIMITER_ON, limiterOn ? 1.0 : 0.0);
+      e.prepare(48000.0f, 0.0f);
+      e.setControls(suite::controlsFrom(s));
+      std::vector<float> xl(512), xr(512);
+      for (int block = 0; block < 50; ++block) {
+        fillConst(xl, xr, -6.0f);
+        e.process(xl.data(), xr.data(), 512, m);
+      }
+      return std::fabs(xl[511]);
+    };
+    const float limited = measure(true);
+    const float unlimited = measure(false);
+    std::printf("output peak: %.3f limited, %.3f unlimited\n", limited,
+                unlimited);
+    assert(limited < 0.978f);
+    assert(unlimited > 1.5f);
+  }
+
   // --- EQ IN is a constant-latency crossfade -------------------------------
   const int latencyBefore = engine.latencySamples();
   shared.set(suite::P_EQ_IN, 1.0);

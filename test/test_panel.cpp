@@ -6,6 +6,7 @@
 #undef NDEBUG
 #endif
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 
 #include "presets.hpp"
@@ -77,6 +78,73 @@ int main() {
   const int vcaAgain = redAt(40, 290);
   assert(vcaAgain < 100);
 
+  // A/B compare: A captures the first state, B the second, switching restores.
+  {
+    shared.set(suite::P_OUTPUT, 0.9);
+    assert(panel.pointerDown(shared, state, 348, 31, false));  // A
+    panel.pointerUp();
+    assert(panel.pointerDown(shared, state, 384, 31, false));  // B
+    panel.pointerUp();
+    shared.set(suite::P_OUTPUT, 0.5);
+    assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.5) < 1.0e-9);
+    assert(panel.pointerDown(shared, state, 348, 31, false));  // back to A
+    panel.pointerUp();
+    assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.9) < 1.0e-9);
+    assert(panel.pointerDown(shared, state, 384, 31, false));  // back to B
+    panel.pointerUp();
+    assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.5) < 1.0e-9);
+  }
+
+  // COPY makes both slots identical.
+  {
+    assert(panel.pointerDown(shared, state, 348, 31, false));  // A
+    panel.pointerUp();
+    assert(panel.pointerDown(shared, state, 424, 31, false));  // COPY
+    panel.pointerUp();
+    assert(panel.pointerDown(shared, state, 384, 31, false));  // B
+    panel.pointerUp();
+    assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.9) < 1.0e-9);
+  }
+
+  // Typed value entry accepts real units and normalizes them.
+  {
+    shared.set(suite::P_INPUT, 0.5);
+    panel.beginTextEntry(shared, state, 85, 190);
+    for (const char* c = "6.0 dB"; *c != '\0'; ++c) {
+      assert(panel.textKey(shared, state, 0, *c));
+    }
+    assert(panel.textKey(shared, state, suite::Panel::kTextEnter, 0));
+    const double expected = (6.0 + 18.0) / 36.0;
+    assert(std::fabs(shared.get(suite::P_INPUT) - expected) < 1.0e-6);
+
+    // Escape abandons an edit.
+    panel.beginTextEntry(shared, state, 85, 190);
+    panel.textKey(shared, state, 0, '9');
+    assert(panel.textKey(shared, state, suite::Panel::kTextEscape, 0));
+    assert(std::fabs(shared.get(suite::P_INPUT) - expected) < 1.0e-6);
+  }
+
+  // Double-click resets a knob to its default.
+  {
+    shared.set(suite::P_INPUT, 0.9);
+    panel.pointerDown(shared, state, 85, 190, false);
+    panel.pointerUp();
+    panel.pointerDown(shared, state, 85, 190, false);
+    panel.pointerUp();
+    assert(std::fabs(shared.get(suite::P_INPUT) - 0.5) < 1.0e-9);
+  }
+
+  // The Hold pill cycles through the fixed hold times.
+  {
+    shared.set(suite::P_GATE_HOLD, 0.0);
+    const double expected[] = {0.1, 0.2, 0.4, 0.8, 1.0, 0.0};
+    for (double v : expected) {
+      assert(panel.pointerDown(shared, state, 193, 671, false));
+      panel.pointerUp();
+      assert(std::fabs(shared.get(suite::P_GATE_HOLD) - v) < 1.0e-9);
+    }
+  }
+
   // Every factory preset must recall a coherent state and draw.
   for (int i = 0; i < suite::kPresetCount; ++i) {
     panel.applyPreset(shared, state, i);
@@ -87,7 +155,7 @@ int main() {
     assert(ct >= 0 && ct <= 1);
     assert(cm >= 0 && cm <= 4);
     assert(et >= 0 && et <= 1);
-    assert(gm >= 0 && gm <= 1);
+    assert(gm >= 0 && gm <= 2);
     panel.draw(cr, shared, state);
   }
 

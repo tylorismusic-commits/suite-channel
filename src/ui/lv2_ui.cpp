@@ -16,6 +16,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/keysym.h>
 #include <cairo-xlib.h>
 
 #include <algorithm>
@@ -129,6 +130,9 @@ struct Ui {
         } else if (ev.xbutton.button == Button1) {
           panel.pointerDown(shared, state, toLogicalX(ev.xbutton.x),
                             toLogicalY(ev.xbutton.y), fine);
+        } else if (ev.xbutton.button == Button3) {
+          panel.beginTextEntry(shared, state, toLogicalX(ev.xbutton.x),
+                               toLogicalY(ev.xbutton.y));
         }
         dirty = true;
         break;
@@ -137,6 +141,23 @@ struct Ui {
         panel.pointerUp();
         dirty = true;
         break;
+      case KeyPress: {
+        char buf[8] = {};
+        KeySym sym = 0;
+        XKeyEvent key = ev.xkey;
+        const int n = XLookupString(&key, buf, sizeof(buf), &sym, nullptr);
+        if (sym == XK_Return || sym == XK_KP_Enter) {
+          panel.textKey(shared, state, suite::Panel::kTextEnter, 0);
+        } else if (sym == XK_Escape) {
+          panel.textKey(shared, state, suite::Panel::kTextEscape, 0);
+        } else if (sym == XK_BackSpace) {
+          panel.textKey(shared, state, suite::Panel::kTextBackspace, 0);
+        } else if (n > 0) {
+          panel.textKey(shared, state, 0, buf[0]);
+        }
+        dirty = true;
+        break;
+      }
       case MotionNotify: {
         const bool fine = (ev.xmotion.state & ShiftMask) != 0;
         panel.pointerMove(shared, state, toLogicalX(ev.xmotion.x),

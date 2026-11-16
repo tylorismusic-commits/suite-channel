@@ -53,6 +53,8 @@
         [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "dyn_post" ; ui:protocol ui:floatProtocol ] ,
         [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "output" ; ui:protocol ui:floatProtocol ] ,
         [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "oversample" ; ui:protocol ui:floatProtocol ] ,
+        [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "gate_hold" ; ui:protocol ui:floatProtocol ] ,
+        [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "limiter" ; ui:protocol ui:floatProtocol ] ,
         [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "gr_meter" ; ui:protocol ui:floatProtocol ] ,
         [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "out_peak_l" ; ui:protocol ui:floatProtocol ] ,
         [ ui:plugin <https://github.com/tylorismusic-commits/suite-channel> ; ui:symbol "out_peak_r" ; ui:protocol ui:floatProtocol ] ,

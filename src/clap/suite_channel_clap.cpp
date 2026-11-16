@@ -302,12 +302,30 @@ private:
           panel_.wheel(shared_, state_, x, y, -1.0);
         } else if (ev.xbutton.button == Button1) {
           panel_.pointerDown(shared_, state_, x, y, fine);
+        } else if (ev.xbutton.button == Button3) {
+          panel_.beginTextEntry(shared_, state_, x, y);
         }
         break;
       }
       case ButtonRelease:
         panel_.pointerUp();
         break;
+      case KeyPress: {
+        char buf[8] = {};
+        KeySym sym = 0;
+        XKeyEvent key = ev.xkey;
+        const int n = XLookupString(&key, buf, sizeof(buf), &sym, nullptr);
+        if (sym == XK_Return || sym == XK_KP_Enter) {
+          panel_.textKey(shared_, state_, Panel::kTextEnter, 0);
+        } else if (sym == XK_Escape) {
+          panel_.textKey(shared_, state_, Panel::kTextEscape, 0);
+        } else if (sym == XK_BackSpace) {
+          panel_.textKey(shared_, state_, Panel::kTextBackspace, 0);
+        } else if (n > 0) {
+          panel_.textKey(shared_, state_, 0, buf[0]);
+        }
+        break;
+      }
       case MotionNotify: {
         const bool fine = (ev.xmotion.state & ShiftMask) != 0;
         panel_.pointerMove(shared_, state_, ev.xmotion.x / s, ev.xmotion.y / s,
@@ -459,6 +477,7 @@ bool paramsValueToText(const clap_plugin_t*, clap_id id, double value,
     case P_GATE_IN:
     case P_GATE_FAST:
     case P_DYN_POST:
+    case P_LIMITER_ON:
       std::snprintf(out, size, "%s", value > 0.5 ? "On" : "Off");
       return true;
     case P_INPUT:
@@ -521,6 +540,9 @@ bool paramsValueToText(const clap_plugin_t*, clap_id id, double value,
       return true;
     case P_GATE_RELEASE:
       std::snprintf(out, size, "%.2f s", gateReleaseMs(static_cast<float>(value)) / 1000.0);
+      return true;
+    case P_GATE_HOLD:
+      std::snprintf(out, size, "%.0f ms", gateHoldMs(static_cast<float>(value)));
       return true;
     case P_COLOR_AMOUNT:
       std::snprintf(out, size, "%.1f", value * 10.0);
@@ -658,13 +680,24 @@ bool stateSave(const clap_plugin_t* p, const clap_ostream_t* stream) {
 
 bool stateLoad(const clap_plugin_t* p, const clap_istream_t* stream) {
   Plugin* s = self(p);
-  double values[P_COUNT];
+  double values[P_COUNT] = {};
   const int64_t got = stream->read(stream, values, sizeof(values));
-  if (got != static_cast<int64_t>(sizeof(values))) {
+  constexpr uint32_t kLegacyCount = P_COUNT - 2;  // 0.1.x had 36 parameters
+  if (got == static_cast<int64_t>(sizeof(values))) {
+    for (uint32_t i = 0; i < P_COUNT; ++i) {
+      s->shared.setFromHost(i, values[i]);
+    }
+  } else if (got == static_cast<int64_t>(kLegacyCount * sizeof(double))) {
+    // Older states end after the original 36 values; the two appended
+    // parameters take their defaults.
+    for (uint32_t i = 0; i < kLegacyCount; ++i) {
+      s->shared.setFromHost(i, values[i]);
+    }
+    for (uint32_t i = kLegacyCount; i < P_COUNT; ++i) {
+      s->shared.setFromHost(i, kParamSpecs[i].def);
+    }
+  } else {
     return false;
-  }
-  for (uint32_t i = 0; i < P_COUNT; ++i) {
-    s->shared.setFromHost(i, values[i]);
   }
   noteHostChanges(s);
   // The UI scale is optional, so states saved before it still load.

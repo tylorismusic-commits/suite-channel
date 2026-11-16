@@ -10,7 +10,11 @@
 #include <cstring>
 #include <vector>
 
+#include "params.hpp"
+
 namespace {
+
+int gFailures = 0;
 
 uint32_t inSize(const clap_input_events_t*) { return 0; }
 const clap_event_header_t* inGet(const clap_input_events_t*, uint32_t) {
@@ -33,6 +37,7 @@ const clap_host_t kHost = [] {
 bool check(bool ok, const char* what) {
   if (!ok) {
     std::fprintf(stderr, "FAIL: %s\n", what);
+    ++gFailures;
   }
   return ok;
 }
@@ -77,7 +82,10 @@ int main(int argc, char** argv) {
   if (!check(params != nullptr, "params extension")) {
     return 1;
   }
-  check(params->count(plugin) == 36, "36 parameters");
+  if (check(params->count(plugin) == static_cast<uint32_t>(suite::P_COUNT),
+            "parameter count")) {
+    std::printf("parameters: %u\n", params->count(plugin));
+  }
 
   if (!check(plugin->activate(plugin, 48000.0, 1, 512), "activate")) {
     return 1;
@@ -168,5 +176,9 @@ int main(int argc, char** argv) {
   entry->deinit();
   dlclose(lib);
   std::printf("suite_clap_host: ok\n");
+  if (gFailures != 0) {
+    std::fprintf(stderr, "%d check(s) failed\n", gFailures);
+    return 1;
+  }
   return 0;
 }

@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.1.6** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.2.0** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -85,9 +85,15 @@ These are the 4K EQ 2 calibrated filters.
 - **THRESH**: −30…+10 dB.
 - **RANGE**: 0–40 dB attenuation floor.
 - **RELEASE**: 0.1–4 s.
+- **HOLD**: 0 / 50 / 100 / 200 / 400 / 500 ms; keeps the gate open after the
+  signal falls below the threshold.
 - **F.ATK**: 1.5 ms / 40 dB or 100 µs / 40 dB.
-- **GATE / EXP**: high-ratio gate or fixed 1:2 downward expansion.
+- **GATE / EXP / DUCK**: high-ratio gate, fixed 1:2 downward expansion, or
+  ducker (attenuates above the threshold).
+- A fast peak envelope feeds the detector, so the gate does not chatter on
+  zero crossings.
 - Variable hysteresis prevents chatter; the gate is before the compressor.
+- A patched sidechain keys the detector in gate and ducker modes.
 - **GATE**: gate in/out.
 
 ### Output / metering
@@ -95,10 +101,24 @@ These are the 4K EQ 2 calibrated filters.
 - **Output fader**: Off to +12 dB, with 0 dB about 3/4 of the way up.
 - **COMP** GR meter (orange), **GATE** GR meter (green).
 - Stereo output peak meter.
-- Hidden ADAA safety clip at −0.2 dBFS.
+- **LIMIT**: switches the −0.2 dBFS safety ceiling on or off. It is on by
+  default.
 - **OS**: Off / 2x / 4x. Default 4x, matching 4K EQ 2. At 88.2/96 kHz 4x is
   capped at 2x; at 176.4/192 kHz it is capped at 1x.
 - **PWR**: click-free master bypass.
+
+### Editing gestures
+
+- **Drag** a knob or fader to change it; the exact value appears in a bubble.
+- **Right-click** a knob, fader or **HOLD** pill to type a value. Units such as
+  `-6 dB`, `1.2 kHz`, `250 ms` and `on`/`off` are accepted. **Enter** applies,
+  **Esc** cancels, **Backspace** edits.
+- **Double-click** a knob or fader to restore its default.
+- **A / B**: two editor-local compare slots. Switching stores the current
+  settings in the slot you leave and recalls the slot you enter.
+- **COPY**: copies the active slot into the other one.
+
+A/B slots live in the editor and are not saved in host state.
 
 ## Presets
 
@@ -142,14 +162,14 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.1.6 puts output unity at 3/4 travel, with +12 dB at the top and off at the
-bottom. 0.1.5 gave the output fader a true off position and +12 dB top.
-0.1.4 matched the output fader thumb to the Reapertips 27×53 MCP thumb.
-0.1.3 cleaned up the gate subheader and control row. 0.1.2 corrected the input
-meter to measure after the input trim; 0.1.1 added the stacked stereo input
-level meter. CLAP and LV2
-load, the editor renders, the DSP runs, the factory presets are generated, and
-the state tests cover VCA/76, Brown/Black, presets, expander/gate, power
+0.2.0 adds gate **Hold** and **Ducker** modes, an output **LIMIT** switch,
+typed value entry, double-click reset, drag value bubbles and A/B/COPY compare.
+0.1.6 put output unity at 3/4 travel, with +12 dB at the top and off at the
+bottom. 0.1.5 gave the output fader a true off position. 0.1.2 corrected the
+input meter to measure after the input trim; 0.1.1 added the stacked stereo
+input level meter. CLAP and LV2 load, the editor renders, the DSP runs, the
+factory presets are generated, and the tests cover VCA/76, Brown/Black,
+presets, gate/expander/ducker/hold, the limiter, typed values, A/B, power
 bypass and all oversampling modes. The remaining gates are the explicit EQ
 parity measurement against the upstream Dusk core and the full
 Ardour/Carla/REAPER matrix.

@@ -51,6 +51,8 @@ enum ParamId : uint32_t {
   P_DYN_POST,
   P_OUTPUT,
   P_OVERSAMPLE,
+  P_GATE_HOLD,
+  P_LIMITER_ON,
   P_COUNT
 };
 
@@ -82,7 +84,7 @@ struct ParamSpec {
 inline constexpr const char* kColourLabels[] = {"Valve", "Console", "Bus",
                                                 "Tape", "Transformer"};
 inline constexpr const char* kCompTypeLabels[] = {"VCA", "76Blue"};
-inline constexpr const char* kGateModeLabels[] = {"Expander", "Gate"};
+inline constexpr const char* kGateModeLabels[] = {"Expander", "Gate", "Ducker"};
 inline constexpr const char* kOversampleLabels[] = {"Off", "2x", "4x"};
 inline constexpr const char* kEqTypeLabels[] = {"Brown", "Black"};
 
@@ -137,18 +139,22 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
      false, "s", {}},
     {"gate_fast", "Gate Fast Attack", "Dynamics", 0.0, 1.0, 0.0, true, false,
      true, nullptr, {}},
-    {"gate_mode", "Gate Mode", "Dynamics", 0.0, 1.0, 1.0, true, false, false,
+    {"gate_mode", "Gate Mode", "Dynamics", 0.0, 2.0, 1.0, true, false, false,
      nullptr, labels(kGateModeLabels)},
     {"dyn_post", "Dynamics Post EQ", "Dynamics", 0.0, 1.0, 0.0, true, false,
      true, nullptr, {}},
     {"output", "Output", "Output", 0.0, 1.0, 0.75, false, false, false, "dB", {}},
     {"oversample", "Oversampling", "Global", 0.0, 2.0, 2.0, true, false, false,
      nullptr, labels(kOversampleLabels)},
+    {"gate_hold", "Gate Hold", "Dynamics", 0.0, 1.0, 0.0, false, false, false,
+     "ms", {}},
+    {"limiter", "Output Limiter", "Output", 0.0, 1.0, 1.0, true, false, true,
+     nullptr, {}},
 };
 
 static_assert(sizeof(kParamSpecs) / sizeof(kParamSpecs[0]) == P_COUNT,
               "kParamSpecs must cover every parameter id");
-static_assert(P_COUNT == 36, "parameter table and enum must stay in sync");
+static_assert(P_COUNT == 38, "parameter table and enum must stay in sync");
 
 class Shared {
 public:
@@ -253,11 +259,13 @@ inline Controls controlsFrom(const Shared& s) noexcept {
   c.gateThreshold = static_cast<float>(s.get(P_GATE_THRESHOLD));
   c.gateRange = static_cast<float>(s.get(P_GATE_RANGE));
   c.gateRelease = static_cast<float>(s.get(P_GATE_RELEASE));
+  c.gateHold = static_cast<float>(s.get(P_GATE_HOLD));
   c.gateFast = s.get(P_GATE_FAST) > 0.5;
   c.gateMode = static_cast<int>(s.get(P_GATE_MODE) + 0.5);
   c.dynPost = s.get(P_DYN_POST) > 0.5;
   c.output = static_cast<float>(s.get(P_OUTPUT));
   c.oversample = static_cast<float>(s.get(P_OVERSAMPLE));
+  c.limiterOn = s.get(P_LIMITER_ON) > 0.5;
   return c;
 }
 

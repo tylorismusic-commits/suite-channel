@@ -19,7 +19,7 @@ enum class Colour : int {
 
 enum class CompType : int { Vca = 0, Blue76, Count };
 
-enum class GateMode : int { Expander = 0, Gate, Count };
+enum class GateMode : int { Expander = 0, Gate, Ducker, Count };
 
 inline float clamp01(float x) noexcept {
   return x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x);
@@ -73,12 +73,14 @@ struct Controls {
   float gateThreshold = 0.25f; // −30..+10 dB
   float gateRange = 0.6f;      // 0..40 dB
   float gateRelease = 0.5f;    // 0.1..4 s
+  float gateHold = 0.0f;       // 0..500 ms
   bool gateFast = false;
   int gateMode = 1;            // GateMode::Gate
 
   bool dynPost = false;
   float output = 0.75f;        // off..+12 dB fader, 0 dB at 3/4 travel
   float oversample = 2.0f;     // 0 off, 1 2x, 2 4x
+  bool limiterOn = true;       // output safety ceiling
 };
 
 // Metering published by the engine, in dB.
@@ -138,6 +140,10 @@ inline float gateRangeDb(float value) noexcept {
 
 inline float gateReleaseMs(float value) noexcept {
   return 100.0f * std::pow(40.0f, clamp01(value));
+}
+
+inline float gateHoldMs(float value) noexcept {
+  return 500.0f * clamp01(value);
 }
 
 inline float hpfHz(float value) noexcept {

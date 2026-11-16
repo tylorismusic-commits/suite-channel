@@ -1,9 +1,10 @@
 // Suite Channel — gate.hpp
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// Stereo-linked SSL-style expander/gate.  Gate mode uses variable hysteresis;
-// expander mode is a fixed 1:2 downward expansion.  Range sets the attenuation
-// floor, so the section can be used as a gentle expander or a hard gate.
+// Stereo-linked SSL-style expander/gate/ducker.  Gate mode uses variable
+// hysteresis and Hold; expander mode is a fixed 1:2 downward expansion; ducker
+// mode attenuates above the threshold.  A patched sidechain keys the detector
+// when available, otherwise the main signal is used.
 #pragma once
 
 #include <algorithm>
@@ -21,6 +22,10 @@ public:
     sr_ = sampleRate > 0.0f ? sampleRate : 48000.0f;
     attackSlow_ = hdsp::timeCoeff(1.5f, sr_);
     attackFast_ = hdsp::timeCoeff(0.1f, sr_);
+    // Peak envelope for the detector so a sine does not chatter the gate on
+    // every zero crossing.
+    detAttackCoeff_ = hdsp::timeCoeff(0.5f, sr_);
+    detReleaseCoeff_ = hdsp::timeCoeff(20.0f, sr_);
     reset();
     setControls(controls_);
   }
@@ -28,37 +33,60 @@ public:
   void setControls(const Controls& c) noexcept {
     controls_ = c;
     enabled_ = c.gateIn;
-    mode_ = static_cast<GateMode>(std::min(std::max(c.gateMode, 0), 1));
+    mode_ = static_cast<GateMode>(std::min(std::max(c.gateMode, 0), 2));
     openDb_ = gateThresholdDb(c.gateThreshold);
     rangeDb_ = gateRangeDb(c.gateRange);
     releaseCoeff_ = hdsp::timeCoeff(gateReleaseMs(c.gateRelease), sr_);
     attackCoeff_ = c.gateFast ? attackFast_ : attackSlow_;
+    holdSamples_ =
+        static_cast<int>(gateHoldMs(c.gateHold) * 0.001f * sr_);
     // Variable hysteresis: more as the threshold is lowered.
     hysteresisDb_ = 2.0f + 6.0f * (1.0f - clamp01(c.gateThreshold));
     closeDb_ = openDb_ - hysteresisDb_;
+    if (holdCounter_ > holdSamples_) {
+      holdCounter_ = holdSamples_;
+    }
   }
 
   // Processes one stereo frame in place. Returns gate gain reduction in dB.
-  float process(float& left, float& right) noexcept {
+  // scL/scR key the detector when scActive is true.
+  float process(float& left, float& right, float scL = 0.0f,
+                float scR = 0.0f, bool scActive = false) noexcept {
     if (!enabled_ || rangeDb_ <= 0.01f) {
       grDb_ = 0.0f;
+      holdCounter_ = 0;
+      env_ = 0.0f;
       return 0.0f;
     }
 
-    const float level = std::max(std::fabs(left), std::fabs(right));
-    const float levelDb = hdsp::gainToDb(level + 1.0e-12f);
+    const float detector =
+        scActive ? std::max(std::fabs(scL), std::fabs(scR))
+                 : std::max(std::fabs(left), std::fabs(right));
+    const float detCoeff =
+        detector > env_ ? detAttackCoeff_ : detReleaseCoeff_;
+    env_ = detCoeff * env_ + (1.0f - detCoeff) * detector;
+    const float levelDb = hdsp::gainToDb(env_ + 1.0e-12f);
 
     float targetGr = 0.0f;
-    if (mode_ == GateMode::Gate) {
-      if (levelDb >= openDb_) {
-        open_ = true;
-      } else if (levelDb <= closeDb_) {
-        open_ = false;
-      }
-      targetGr = open_ ? 0.0f : rangeDb_;
-    } else {
+    if (mode_ == GateMode::Expander) {
       // Fixed 1:2 downward expansion, capped by Range.
       targetGr = std::min(std::max(0.5f * (openDb_ - levelDb), 0.0f), rangeDb_);
+    } else {
+      if (levelDb >= openDb_) {
+        state_ = true;
+        holdCounter_ = holdSamples_;
+      } else if (levelDb <= closeDb_) {
+        if (holdCounter_ > 0) {
+          --holdCounter_;
+        } else {
+          state_ = false;
+        }
+      }
+      if (mode_ == GateMode::Gate) {
+        targetGr = state_ ? 0.0f : rangeDb_;
+      } else {
+        targetGr = state_ ? rangeDb_ : 0.0f;
+      }
     }
 
     const float coeff = targetGr < grDb_ ? attackCoeff_ : releaseCoeff_;
@@ -75,7 +103,9 @@ public:
 
   void reset() noexcept {
     grDb_ = 0.0f;
-    open_ = false;
+    state_ = false;
+    holdCounter_ = 0;
+    env_ = 0.0f;
   }
 
 private:
@@ -83,7 +113,7 @@ private:
   Controls controls_;
   bool enabled_ = false;
   GateMode mode_ = GateMode::Gate;
-  bool open_ = false;
+  bool state_ = false;
   float openDb_ = -20.0f;
   float closeDb_ = -26.0f;
   float hysteresisDb_ = 6.0f;
@@ -92,6 +122,11 @@ private:
   float attackFast_ = 0.0f;
   float attackCoeff_ = 0.0f;
   float releaseCoeff_ = 0.0f;
+  int holdSamples_ = 0;
+  int holdCounter_ = 0;
+  float detAttackCoeff_ = 0.0f;
+  float detReleaseCoeff_ = 0.0f;
+  float env_ = 0.0f;
   float grDb_ = 0.0f;
 };
 
