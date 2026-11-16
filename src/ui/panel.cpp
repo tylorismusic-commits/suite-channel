@@ -123,7 +123,6 @@ const char* const kScaleMakeup[] = {"-9", "0", "+9"};
 const char* const kScaleGateThresh[] = {"-30", "-15", "0", "+10"};
 const char* const kScaleRange[] = {"0", "10", "20", "30", "40"};
 const char* const kScaleRelease[] = {"0.1", "0.3", "1", "2", "4"};
-const char* const kScaleOutput[] = {"-18", "0", "+18"};
 
 template <size_t N>
 std::vector<const char*> sc(const char* const (&labels)[N]) {
@@ -131,6 +130,7 @@ std::vector<const char*> sc(const char* const (&labels)[N]) {
 }
 
 constexpr double kPi = 3.14159265358979323846;
+constexpr double kFaderInset = 34.0;
 
 constexpr double kPresetX = 64.0;
 constexpr double kPresetY = 14.0;
@@ -1073,8 +1073,8 @@ void Panel::drawToggle(cairo_t* cr, const Widget& w, bool on) const {
 void Panel::drawFader(cairo_t* cr, const Widget& w, double value) const {
   const Skin skin = skinFor(1);
   const double cx = w.x + w.w * 0.5;
-  const double top = w.y + 12;
-  const double bottom = w.y + w.h - 12;
+  const double top = w.y + kFaderInset;
+  const double bottom = w.y + w.h - kFaderInset;
   const double f = clamp01(value);
   const double hy = bottom - f * (bottom - top);
 
@@ -1142,11 +1142,15 @@ void Panel::drawFader(cairo_t* cr, const Widget& w, double value) const {
     cairo_stroke(cr);
   }
 
-  const char* marks[] = {"+18", "+9", "0", "-9", "-18"};
-  for (int i = 0; i < 5; ++i) {
-    const double frac = 1.0 - i / 4.0;
-    const double ty = bottom - frac * (bottom - top);
-    text(cr, marks[i], cx + 28, ty + 3, 7.5, 0, skin.legendDim.r,
+  struct FaderMark {
+    const char* label;
+    double value;
+  };
+  const FaderMark marks[] = {{"+12", 1.0},    {"+6", 0.75},  {"0", 0.5},
+                             {"-12", 0.3155}, {"-24", 0.199}, {"OFF", 0.0}};
+  for (const FaderMark& mark : marks) {
+    const double ty = bottom - mark.value * (bottom - top);
+    text(cr, mark.label, cx + 28, ty + 3, 7.5, 0, skin.legendDim.r,
          skin.legendDim.g, skin.legendDim.b);
   }
 }
@@ -1279,8 +1283,8 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
         dragStartY_ = y;
         dragStartValue_ = shared.get(w.param);
         {
-          const double top = w.y + 12.0;
-          const double bottom = w.y + w.h - 12.0;
+          const double top = w.y + kFaderInset;
+          const double bottom = w.y + w.h - kFaderInset;
           const double v = (bottom - y) / (bottom - top);
           shared.set(w.param, v);
           state.presetDirty = true;
@@ -1331,8 +1335,8 @@ bool Panel::pointerMove(Shared& shared, PanelState& state, double x, double y,
   if (dragFader_) {
     for (const Widget& w : widgets_) {
       if (w.kind == Kind::Fader && w.param == param) {
-        const double top = w.y + 12.0;
-        const double bottom = w.y + w.h - 12.0;
+        const double top = w.y + kFaderInset;
+        const double bottom = w.y + w.h - kFaderInset;
         shared.set(param, (bottom - y) / (bottom - top));
         state.presetDirty = true;
         return true;

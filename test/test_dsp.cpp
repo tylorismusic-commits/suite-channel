@@ -45,6 +45,12 @@ void fillConst(std::vector<float>& l, std::vector<float>& r, float dbfs) {
 } // namespace
 
 int main() {
+  // Fader law: unity at centre, +12 dB at the top, silence at the bottom.
+  assert(std::fabs(suite::outputGainLinear(0.5f) - 1.0f) < 1.0e-5f);
+  assert(std::fabs(suite::outputGainDb(0.5f)) < 1.0e-4f);
+  assert(std::fabs(suite::outputGainDb(1.0f) - 12.0f) < 0.01f);
+  assert(suite::outputGainLinear(0.0f) == 0.0f);
+
   suite::Shared shared;
   suite::Engine engine;
   suite::Meters meters;
@@ -226,6 +232,34 @@ int main() {
     std::printf("input meter: %.1f dB at 0 dB trim, %.1f dB at +18 dB\n",
                 atUnity, boosted);
     assert(boosted - atUnity > 15.0f);
+  }
+
+  // --- Output fader reaches true off and +12 dB ----------------------------
+  {
+    suite::Shared outShared;
+    suite::Engine outEngine;
+    suite::Meters outMeters;
+    outShared.set(suite::P_COMP_IN, 0.0);
+    outShared.set(suite::P_GATE_IN, 0.0);
+    outShared.set(suite::P_EQ_IN, 0.0);
+    outShared.set(suite::P_COLOR_AMOUNT, 0.0);
+    outShared.set(suite::P_OUTPUT, 0.0);
+    outEngine.prepare(48000.0f, 0.0f);
+    outEngine.setControls(suite::controlsFrom(outShared));
+    std::vector<float> fl(512), fr(512);
+    for (int block = 0; block < 50; ++block) {
+      fillConst(fl, fr, -20.0f);
+      outEngine.process(fl.data(), fr.data(), 512, outMeters);
+    }
+    assert(std::fabs(fl[511]) < 0.001f);
+
+    outShared.set(suite::P_OUTPUT, 1.0);
+    outEngine.setControls(suite::controlsFrom(outShared));
+    for (int block = 0; block < 50; ++block) {
+      fillConst(fl, fr, -20.0f);
+      outEngine.process(fl.data(), fr.data(), 512, outMeters);
+    }
+    assert(std::fabs(fl[511] - 0.3981f) < 0.01f);
   }
 
   // --- Brown / Black must change the audio path, not just the UI ----------

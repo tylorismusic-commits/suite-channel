@@ -77,7 +77,7 @@ struct Controls {
   int gateMode = 1;            // GateMode::Gate
 
   bool dynPost = false;
-  float output = 0.5f;         // ±18 dB
+  float output = 0.5f;         // off..+12 dB fader, 0 dB at centre
   float oversample = 2.0f;     // 0 off, 1 2x, 2 4x
 };
 
@@ -100,8 +100,24 @@ inline float inputGainDb(float value) noexcept {
   return mapLin(value, -18.0f, 18.0f);
 }
 
+// Output fader: unity at centre, +12 dB at the top, and a cubic gain taper
+// down to true silence at the bottom. Existing presets sit around 0.5, so
+// their output trims keep their previous meaning.
+inline float outputGainLinear(float value) noexcept {
+  const float v = clamp01(value);
+  if (v <= 0.0f) {
+    return 0.0f;
+  }
+  if (v >= 0.5f) {
+    return std::pow(10.0f, (12.0f * (2.0f * v - 1.0f)) / 20.0f);
+  }
+  const float t = 2.0f * v;
+  return t * t * t;
+}
+
 inline float outputGainDb(float value) noexcept {
-  return mapLin(value, -18.0f, 18.0f);
+  const float gain = outputGainLinear(value);
+  return gain > 1.0e-9f ? 20.0f * std::log10(gain) : -120.0f;
 }
 
 inline float compThresholdDb(float value) noexcept {

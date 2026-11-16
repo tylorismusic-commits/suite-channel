@@ -1,6 +1,6 @@
 # Maintainer: tylor <tylorismusic@users.noreply.github.com>
 pkgname=suite-channel
-pkgver=0.1.4
+pkgver=0.1.5
 pkgrel=1
 pkgdesc="Vertical SSL-style channel strip with VCA/76Blue compression and 4K EQ (CLAP + LV2)"
 arch=('x86_64')

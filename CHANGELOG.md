@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.5 — 2026-11-16
+
+- Output fader is now **Off at the bottom**, **0 dB at centre** and **+12 dB at
+  the top**. The lower half uses a cubic gain taper to reach true silence.
+- Fader marks updated to +12 / +6 / 0 / −12 / −24 / OFF.
+- The 27×53 Reapertips-style thumb is inset at both ends so it stays inside the
+  track at full boost and full attenuation.
+- Existing presets around 0.5 remain at 0 dB; no preset retune needed.
+
 ## 0.1.4 — 2026-11-16
 
 - Output fader thumb resized to the Reapertips MCP volume-thumb proportions

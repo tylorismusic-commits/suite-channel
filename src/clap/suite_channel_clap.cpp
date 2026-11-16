@@ -465,7 +465,11 @@ bool paramsValueToText(const clap_plugin_t*, clap_id id, double value,
       formatDb(out, size, inputGainDb(static_cast<float>(value)));
       return true;
     case P_OUTPUT:
-      formatDb(out, size, outputGainDb(static_cast<float>(value)));
+      if (value <= 0.0005) {
+        std::snprintf(out, size, "Off");
+      } else {
+        formatDb(out, size, outputGainDb(static_cast<float>(value)));
+      }
       return true;
     case P_COMP_THRESHOLD:
       formatDb(out, size, compThresholdDb(static_cast<float>(value)));

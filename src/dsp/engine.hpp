@@ -72,7 +72,7 @@ public:
     fet_.setControls(c);
     eq_.setControls(c);
     inputSmooth_.setTarget(hdsp::dbToGain(inputGainDb(c.input)));
-    outputSmooth_.setTarget(hdsp::dbToGain(outputGainDb(c.output)));
+    outputSmooth_.setTarget(outputGainLinear(c.output));
     enableSmooth_.setTarget(c.enabled ? 1.0f : 0.0f);
     eqEnableSmooth_.setTarget(c.eqIn ? 1.0f : 0.0f);
   }
