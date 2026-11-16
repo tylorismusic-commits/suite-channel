@@ -1,7 +1,9 @@
 // Suite Channel — minimal CLAP host smoke test
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <clap/all.h>
+#include <X11/Xlib.h>
 #include <dlfcn.h>
+#include <unistd.h>
 
 #include <cmath>
 #include <cstdio>
@@ -123,6 +125,36 @@ int main(int argc, char** argv) {
       plugin->get_extension(plugin, CLAP_EXT_LATENCY));
   if (latency) {
     std::printf("latency: %u samples\n", latency->get(plugin));
+  }
+
+  // Exercise the editor under the host's X11 display (normally Xvfb).
+  const auto* gui = static_cast<const clap_plugin_gui_t*>(
+      plugin->get_extension(plugin, CLAP_EXT_GUI));
+  if (gui && gui->is_api_supported &&
+      gui->is_api_supported(plugin, CLAP_WINDOW_API_X11, false)) {
+    Display* dpy = XOpenDisplay(nullptr);
+    if (dpy) {
+      const Window win = XCreateSimpleWindow(
+          dpy, DefaultRootWindow(dpy), 0, 0, 560, 1040, 0, 0, 0);
+      XMapWindow(dpy, win);
+      XFlush(dpy);
+      clap_window_t cw{};
+      cw.api = CLAP_WINDOW_API_X11;
+      cw.x11 = win;
+      if (gui->create(plugin, CLAP_WINDOW_API_X11, false)) {
+        if (gui->set_parent) {
+          check(gui->set_parent(plugin, &cw), "gui set_parent");
+        }
+        gui->show(plugin);
+        XFlush(dpy);
+        usleep(200000);
+        gui->hide(plugin);
+        gui->destroy(plugin);
+        std::printf("gui: opened\n");
+      }
+      XDestroyWindow(dpy, win);
+      XCloseDisplay(dpy);
+    }
   }
 
   plugin->stop_processing(plugin);

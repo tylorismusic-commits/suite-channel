@@ -174,11 +174,19 @@ target_compile_features(suite_ui_preview PRIVATE cxx_std_17)
 add_executable(suite_clap_host_test test/clap_host_test.cpp)
 target_include_directories(suite_clap_host_test PRIVATE
   "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/third_party/clap/include")
-target_link_libraries(suite_clap_host_test PRIVATE ${CMAKE_DL_LIBS})
+target_link_libraries(suite_clap_host_test PRIVATE
+  PkgConfig::X11 ${CMAKE_DL_LIBS})
 target_compile_features(suite_clap_host_test PRIVATE cxx_std_17)
 add_dependencies(suite_clap_host_test suite_channel_bundle)
-add_test(NAME suite_clap_host
-  COMMAND suite_clap_host_test "${CMAKE_BINARY_DIR}/clap/SuiteChannel.clap")
+find_program(XVFB_RUN xvfb-run)
+if(XVFB_RUN)
+  add_test(NAME suite_clap_host
+    COMMAND "${XVFB_RUN}" -a -s "-screen 0 1600x1200x24"
+      "$<TARGET_FILE:suite_clap_host_test>" "${CMAKE_BINARY_DIR}/clap/SuiteChannel.clap")
+else()
+  add_test(NAME suite_clap_host
+    COMMAND suite_clap_host_test "${CMAKE_BINARY_DIR}/clap/SuiteChannel.clap")
+endif()
 
 add_executable(suite_lv2_host_test test/lv2_host_test.cpp)
 target_include_directories(suite_lv2_host_test PRIVATE
