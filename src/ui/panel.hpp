@@ -12,7 +12,7 @@
 namespace suite {
 
 constexpr int kPanelWidth = 700;
-constexpr int kPanelHeight = 1040;
+constexpr int kPanelHeight = 920;
 
 struct PanelState {
   int presetIndex = -1;
@@ -96,6 +96,7 @@ private:
     const char* label = "";
     std::vector<const char*> scale;
     bool labelBelow = false;
+    bool onSilver = false;
     std::vector<const char*> buttonText;
   };
 

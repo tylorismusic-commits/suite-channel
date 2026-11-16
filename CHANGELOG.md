@@ -5,9 +5,13 @@
 First working vertical channel strip.
 
 - New `suite-channel` CLAP + LV2 plugin with the Comp Suite visual language.
-- 700×1040 three-column panel adapted from the SSL 4000 E layout reference.
-- Opens at a fit-to-screen scale by default (630×936 on a 1080p display).
+- 700×920 three-column panel adapted from the SSL 4000 E layout reference.
+- Opens at 1.0× on a 1080p display and scales down on smaller screens.
+- Console-coloured EQ fills: HF red, HMF green, LMF blue, LF amber; white
+  filter knobs and green gate knobs.
+- Brushed-silver compressor panel when 76Blue is engaged.
 - LED-ladder GR/output meters and a Reapertips-inspired long output fader.
+- Removed the unused lower panel area; the strip now ends with the fader. 
 - Patina colour section: Valve, Console, Bus, Tape, Transformer, one Amount
   control with auto-gain.
 - SSL-style expander/gate with variable hysteresis, Range, Release, Fast Attack

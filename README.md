@@ -12,12 +12,17 @@ language. It combines:
   and HPF/LPF,
 - a vertical output fader and metering.
 
-The 700×1040 strip opens at a fit-to-screen scale by default (630×936 on a
-1080p display). It is an independent design. It is not affiliated with or
-endorsed by Solid State Logic, Waves, Universal Audio, Dusk Audio, or any
-hardware manufacturer.
+The 700×920 strip opens at 1.0× on a 1080p display, and scales down on smaller
+screens. It is an independent design. It is not affiliated with or endorsed by
+Solid State Logic, Waves, Universal Audio, Dusk Audio, or any hardware
+manufacturer.
 
 ![Suite Channel](docs/suite-channel.png)
+
+![Suite Channel in 76Blue mode](docs/suite-channel-76.png)
+
+*76Blue swaps the compressor panel to brushed silver and keeps the same
+control surface.*
 
 ## Signal flow
 

@@ -10,9 +10,9 @@
 
 namespace suite {
 
-// The editor is laid out once in logical units (700 x 1040) and scaled
+// The editor is laid out once in logical units (700 x 920) and scaled
 // uniformly.  Scales move in steps of 1/20, because 700 = 35 * 20 and
-// 1040 = 52 * 20: every step gives an exact 700:1040 window, with no rounding
+// 920 = 46 * 20: every step gives an exact 700:920 window, with no rounding
 // drift between width and height.
 constexpr int kScaleSteps = 20;
 constexpr int kMinScaleStep = 10;   // 0.5x

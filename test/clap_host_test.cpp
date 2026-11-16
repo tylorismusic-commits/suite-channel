@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
     Display* dpy = XOpenDisplay(nullptr);
     if (dpy) {
       const Window win = XCreateSimpleWindow(
-          dpy, DefaultRootWindow(dpy), 0, 0, 700, 1040, 0, 0, 0);
+          dpy, DefaultRootWindow(dpy), 0, 0, 700, 920, 0, 0, 0);
       XMapWindow(dpy, win);
       XFlush(dpy);
       clap_window_t cw{};

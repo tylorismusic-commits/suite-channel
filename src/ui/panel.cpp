@@ -67,20 +67,42 @@ Skin skinFor(int colour) {
   return s;
 }
 
-Rgb bandAccent(uint32_t param) {
-  if (param == P_HF_GAIN || param == P_HF_FREQ || param == P_HF_BELL) {
-    return {0.90, 0.36, 0.30};  // HF red
+struct KnobPalette {
+  Rgb cap;
+  Rgb edge;
+  Rgb indicator;
+};
+
+// Console-style fill colours: HF red, HMF green, LMF blue, LF amber; the
+// gate is green and the filters are the usual light grey.
+KnobPalette paletteFor(uint32_t param) {
+  switch (param) {
+    case P_HF_GAIN:
+    case P_HF_FREQ:
+    case P_HF_BELL:
+      return {{0.72, 0.20, 0.16}, {0.34, 0.06, 0.05}, {1.0, 0.90, 0.84}};
+    case P_HM_GAIN:
+    case P_HM_FREQ:
+    case P_HM_Q:
+      return {{0.24, 0.58, 0.28}, {0.06, 0.24, 0.09}, {0.90, 1.0, 0.88}};
+    case P_LM_GAIN:
+    case P_LM_FREQ:
+    case P_LM_Q:
+      return {{0.22, 0.42, 0.72}, {0.06, 0.16, 0.34}, {0.86, 0.93, 1.0}};
+    case P_LF_GAIN:
+    case P_LF_FREQ:
+    case P_LF_BELL:
+      return {{0.64, 0.42, 0.16}, {0.28, 0.16, 0.05}, {1.0, 0.92, 0.78}};
+    case P_GATE_THRESHOLD:
+    case P_GATE_RANGE:
+    case P_GATE_RELEASE:
+      return {{0.26, 0.56, 0.30}, {0.06, 0.22, 0.09}, {0.90, 1.0, 0.88}};
+    case P_HPF:
+    case P_LPF:
+      return {{0.72, 0.74, 0.76}, {0.40, 0.42, 0.45}, {0.10, 0.11, 0.12}};
+    default:
+      return {{0.20, 0.52, 0.82}, {0.07, 0.27, 0.46}, {0.92, 0.96, 1.0}};
   }
-  if (param == P_HM_GAIN || param == P_HM_FREQ || param == P_HM_Q) {
-    return {0.35, 0.78, 0.42};  // HMF green
-  }
-  if (param == P_LM_GAIN || param == P_LM_FREQ || param == P_LM_Q) {
-    return {0.36, 0.62, 0.92};  // LMF blue
-  }
-  if (param == P_LF_GAIN || param == P_LF_FREQ || param == P_LF_BELL) {
-    return {0.86, 0.58, 0.28};  // LF amber
-  }
-  return {0.92, 0.96, 1.0};
 }
 
 const char* const kScaleInput[] = {"-18", "0", "+18"};
@@ -253,6 +275,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   widgets_.clear();
   const int colour = currentColour(shared);
   const int compType = std::clamp(static_cast<int>(shared.get(P_COMP_TYPE) + 0.5), 0, 1);
+  const bool silverComp = compType == 1;
 
   auto knob = [&](uint32_t param, double x, double y, double r,
                   const char* label, std::vector<const char*> scale,
@@ -340,16 +363,24 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   pill(P_POLARITY, 165, 132, 64, 20, "\u00d8");
 
   // Dynamics.
-  pill(P_DYN_POST, 90, 286, 56, 22, "POST EQ");
-  button(P_COMP_TYPE, 150, 286, 44, 22, 0.0, "VCA");
-  button(P_COMP_TYPE, 198, 286, 44, 22, 1.0, "76");
+  pill(P_DYN_POST, 60, 286, 56, 22, "POST EQ");
+  widgets_.back().onSilver = silverComp;
+  button(P_COMP_TYPE, 120, 286, 44, 22, 0.0, "VCA");
+  widgets_.back().onSilver = silverComp;
+  button(P_COMP_TYPE, 168, 286, 44, 22, 1.0, "76");
+  widgets_.back().onSilver = silverComp;
 
   knob(P_COMP_THRESHOLD, 80, 366, 26, "THRESH",
        sc(kScaleCompThresh), true);
+  widgets_.back().onSilver = silverComp;
   knob(P_COMP_MAKEUP, 180, 366, 24, "MAKEUP", sc(kScaleMakeup), true);
+  widgets_.back().onSilver = silverComp;
   pill(P_COMP_FAST, 44, 430, 58, 22, "F.ATK");
+  widgets_.back().onSilver = silverComp;
   pill(P_COMP_AUTO, 112, 430, 56, 22, "AUTO");
+  widgets_.back().onSilver = silverComp;
   pill(P_COMP_IN, 112, 456, 56, 22, "COMP");
+  widgets_.back().onSilver = silverComp;
 
   // Gate.
   knob(P_GATE_THRESHOLD, 80, 542, 26, "THRESH",
@@ -367,8 +398,8 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
   // EQ.
   pill(P_EQ_IN, 350, 136, 52, 22, "EQ IN");
-  button(P_EQ_TYPE, 330, 840, 62, 22, 0.0, "BROWN");
-  button(P_EQ_TYPE, 398, 840, 62, 22, 1.0, "BLACK");
+  button(P_EQ_TYPE, 316, 788, 62, 22, 0.0, "BROWN");
+  button(P_EQ_TYPE, 384, 788, 62, 22, 1.0, "BLACK");
 
   // HF.
   knob(P_HF_GAIN, 330, 208, 28, "HF", sc(kScaleGain), true, 1.35);
@@ -398,7 +429,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     f.x = 590;
     f.y = 168;
     f.w = 72;
-    f.h = 620;
+    f.h = 660;
     f.label = "OUTPUT";
     widgets_.push_back(f);
   }
@@ -611,12 +642,12 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
       std::clamp(static_cast<int>(shared.get(P_COMP_TYPE) + 0.5), 0, 1);
 
   // Faceplate.
-  cairo_pattern_t* pat = cairo_pattern_create_linear(0, 116, 0, 1004);
+  cairo_pattern_t* pat = cairo_pattern_create_linear(0, 116, 0, 884);
   cairo_pattern_add_color_stop_rgb(pat, 0.0, skin.bodyTop.r, skin.bodyTop.g,
                                    skin.bodyTop.b);
   cairo_pattern_add_color_stop_rgb(pat, 1.0, skin.bodyBottom.r,
                                    skin.bodyBottom.g, skin.bodyBottom.b);
-  roundRect(cr, 16, 116, 668, 888, 6);
+  roundRect(cr, 16, 116, 668, 768, 6);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_pattern_destroy(pat);
@@ -625,7 +656,7 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
     cairo_pattern_t* grain = cairo_pattern_create_for_surface(grain_);
     cairo_pattern_set_extend(grain, CAIRO_EXTEND_REPEAT);
     cairo_save(cr);
-    cairo_rectangle(cr, 17, 117, 666, 886);
+    cairo_rectangle(cr, 17, 117, 666, 766);
     cairo_clip(cr);
     cairo_set_source(cr, grain);
     cairo_paint_with_alpha(cr, 0.018);
@@ -639,12 +670,12 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   cairo_line_to(cr, 682, 117.5);
   cairo_stroke(cr);
   setRgb(cr, {0, 0, 0}, 0.22);
-  cairo_move_to(cr, 18, 1002.5);
-  cairo_line_to(cr, 682, 1002.5);
+  cairo_move_to(cr, 18, 882.5);
+  cairo_line_to(cr, 682, 882.5);
   cairo_stroke(cr);
 
   for (double sx : {32.0, 668.0}) {
-    for (double sy : {132.0, 988.0}) {
+    for (double sy : {132.0, 868.0}) {
       cairo_arc(cr, sx, sy, 4.5, 0, 2 * kPi);
       setRgb(cr, skin.screw, 0.9);
       cairo_fill(cr);
@@ -671,17 +702,48 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   section(24, 124, 220, 112, "INPUT / COLOUR");
   section(24, 244, 220, 456, "DYNAMICS");
   section(24, 708, 220, 152, "FILTERS");
-  section(256, 124, 250, 800, "EQUALISER");
-  section(518, 124, 158, 800, "OUTPUT");
+  section(256, 124, 250, 736, "EQUALISER");
+  section(518, 124, 158, 736, "OUTPUT");
 
-  text(cr, "VOICING", 330, 832, 9.0, 0, skin.legendDim.r, skin.legendDim.g,
+  // The 76Blue module gets a brushed-silver face, like the reference's
+  // alternate compressor panel.
+  if (compType == 1) {
+    cairo_pattern_t* silver =
+        cairo_pattern_create_linear(0, 278, 0, 482);
+    cairo_pattern_add_color_stop_rgb(silver, 0.0, 0.84, 0.85, 0.86);
+    cairo_pattern_add_color_stop_rgb(silver, 1.0, 0.56, 0.58, 0.61);
+    roundRect(cr, 30, 278, 210, 204, 5);
+    cairo_set_source(cr, silver);
+    cairo_fill(cr);
+    cairo_pattern_destroy(silver);
+
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgba(cr, 1, 1, 1, 0.045);
+    for (double y = 282; y < 478; y += 3.0) {
+      cairo_move_to(cr, 33, y);
+      cairo_line_to(cr, 237, y);
+      cairo_stroke(cr);
+    }
+    cairo_set_source_rgba(cr, 0.10, 0.11, 0.12, 0.55);
+    roundRect(cr, 30.5, 278.5, 209, 203, 5);
+    cairo_stroke(cr);
+    cairo_set_source_rgba(cr, 1, 1, 1, 0.35);
+    cairo_move_to(cr, 34, 280.5);
+    cairo_line_to(cr, 236, 280.5);
+    cairo_stroke(cr);
+  }
+
+  text(cr, "VOICING", 316, 780, 9.0, 0, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
 
-  // Dynamics sub-headers.
-  text(cr, "COMP", 34, 322, 10.0, 0, skin.legendDim.r, skin.legendDim.g,
-       skin.legendDim.b);
+  // Dynamics sub-headers. The compressor labels sit on silver when the
+  // 76Blue panel is active.
+  const Rgb compLegend =
+      compType == 1 ? Rgb{0.12, 0.13, 0.14} : skin.legendDim;
+  text(cr, "COMP", 34, 322, 10.0, 0, compLegend.r, compLegend.g,
+       compLegend.b);
   text(cr, compType == 0 ? "3.5:1" : "4:1", 236, 322, 10.0, 2,
-       skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
+       compLegend.r, compLegend.g, compLegend.b);
   text(cr, "GATE / EXPANDER", 34, 490, 10.0, 0, skin.legendDim.r,
        skin.legendDim.g, skin.legendDim.b);
 
@@ -750,19 +812,19 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
 
   // Footer.
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.55);
-  cairo_rectangle(cr, 0, 1004, kPanelWidth, 36);
+  cairo_rectangle(cr, 0, 884, kPanelWidth, 36);
   cairo_fill(cr);
   cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.10);
   cairo_set_line_width(cr, 1.0);
-  cairo_move_to(cr, 0, 1004.5);
-  cairo_line_to(cr, kPanelWidth, 1004.5);
+  cairo_move_to(cr, 0, 884.5);
+  cairo_line_to(cr, kPanelWidth, 884.5);
   cairo_stroke(cr);
 
   char caption[96];
   std::snprintf(caption, sizeof(caption), "%s  ·  %s channel strip",
                 kColourLabels[currentColour(shared)],
                 compType == 0 ? "VCA" : "76Blue");
-  text(cr, caption, kPanelWidth * 0.5, 1028, 12, 1, 0.86, 0.88, 0.90);
+  text(cr, caption, kPanelWidth * 0.5, 908, 12, 1, 0.86, 0.88, 0.90);
 }
 
 void Panel::drawWidget(cairo_t* cr, const Widget& w, const Shared& shared,
@@ -827,11 +889,14 @@ void Panel::drawWidget(cairo_t* cr, const Widget& w, const Shared& shared,
 
 void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
   const Skin skin = skinFor(1);
+  const KnobPalette pal = paletteFor(w.param);
+  const Rgb legend = w.onSilver ? Rgb{0.13, 0.14, 0.15} : skin.legend;
+  const Rgb legendDim = w.onSilver ? Rgb{0.30, 0.31, 0.33} : skin.legendDim;
   const double cx = w.x;
   const double cy = w.y;
   const double r = w.r;
 
-  setRgb(cr, skin.legendDim, 0.55);
+  setRgb(cr, legendDim, 0.55);
   cairo_set_line_width(cr, 1.0);
   for (int i = 0; i <= 10; ++i) {
     const double a = knobAngle(i / 10.0);
@@ -847,11 +912,11 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
     const double a0 = knobAngle(0.0);
     const double a1 = knobAngle(1.0);
     text(cr, "\u2212", cx + std::cos(a0) * (r * 1.44),
-         cy + std::sin(a0) * (r * 1.44) + 4, 12, 1, skin.legendDim.r,
-         skin.legendDim.g, skin.legendDim.b);
+         cy + std::sin(a0) * (r * 1.44) + 4, 12, 1, legendDim.r,
+         legendDim.g, legendDim.b);
     text(cr, "+", cx + std::cos(a1) * (r * 1.44),
-         cy + std::sin(a1) * (r * 1.44) + 4, 12, 1, skin.legendDim.r,
-         skin.legendDim.g, skin.legendDim.b);
+         cy + std::sin(a1) * (r * 1.44) + 4, 12, 1, legendDim.r,
+         legendDim.g, legendDim.b);
   }
 
   const size_t n = w.scale.size();
@@ -860,8 +925,8 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
     const double a = knobAngle(f);
     const double lx = cx + std::cos(a) * (r * w.scaleRadius);
     const double ly = cy + std::sin(a) * (r * w.scaleRadius);
-    text(cr, w.scale[i], lx, ly + 4, 9.0, 1, skin.legend.r, skin.legend.g,
-         skin.legend.b);
+    text(cr, w.scale[i], lx, ly + 4, 9.0, 1, legend.r, legend.g,
+         legend.b);
   }
 
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.18);
@@ -884,12 +949,12 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
 
   cairo_pattern_t* cap = cairo_pattern_create_radial(
       cx - r * 0.35, cy - r * 0.40, r * 0.05, cx, cy, r * 0.98);
-  const Rgb hi = mix(skin.knobCap, {1, 1, 1}, 0.24);
+  const Rgb hi = mix(pal.cap, {1, 1, 1}, 0.24);
   cairo_pattern_add_color_stop_rgb(cap, 0.0, hi.r, hi.g, hi.b);
-  cairo_pattern_add_color_stop_rgb(cap, 0.75, skin.knobCap.r, skin.knobCap.g,
-                                   skin.knobCap.b);
-  cairo_pattern_add_color_stop_rgb(cap, 1.0, skin.knobCapEdge.r,
-                                   skin.knobCapEdge.g, skin.knobCapEdge.b);
+  cairo_pattern_add_color_stop_rgb(cap, 0.75, pal.cap.r, pal.cap.g,
+                                   pal.cap.b);
+  cairo_pattern_add_color_stop_rgb(cap, 1.0, pal.edge.r,
+                                   pal.edge.g, pal.edge.b);
   cairo_arc(cr, cx, cy, r * 0.82, 0, 2 * kPi);
   cairo_set_source(cr, cap);
   cairo_fill(cr);
@@ -902,7 +967,7 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
       span > 0.0 ? (std::min(value, vmax) - spec2.min) / span : 0.0;
   const double a = knobAngle(clamp01(frac));
   cairo_set_line_width(cr, 2.0);
-  setRgb(cr, bandAccent(w.param));
+  setRgb(cr, pal.indicator);
   cairo_move_to(cr, cx + std::cos(a) * r * 0.26,
                 cy + std::sin(a) * r * 0.26);
   cairo_line_to(cr, cx + std::cos(a) * r * 0.78,
@@ -910,27 +975,30 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
   cairo_stroke(cr);
 
   const double labelY = w.labelBelow ? cy + r * 1.44 + 18 : cy - r * 1.44 - 16;
-  text(cr, w.label, cx, labelY, 10.0, 1, skin.legend.r, skin.legend.g,
-       skin.legend.b);
+  text(cr, w.label, cx, labelY, 10.0, 1, legend.r, legend.g,
+       legend.b);
 }
 
 void Panel::drawPill(cairo_t* cr, const Widget& w, bool on) const {
   const Skin skin = skinFor(1);
+  const Rgb off = w.onSilver ? Rgb{0.40, 0.42, 0.45} : skin.btnOff;
+  const Rgb offText = w.onSilver ? Rgb{0.12, 0.13, 0.14} : skin.btnText;
   roundRect(cr, w.x, w.y, w.w, w.h, 5);
-  setRgb(cr, on ? skin.btnOn : skin.btnOff);
+  setRgb(cr, on ? skin.btnOn : off);
   cairo_fill(cr);
   cairo_set_line_width(cr, 1.0);
   setRgb(cr, {0.0, 0.0, 0.0}, 0.35);
   roundRect(cr, w.x + 0.5, w.y + 0.5, w.w - 1.0, w.h - 1.0, 5);
   cairo_stroke(cr);
-  const Rgb tc = on ? skin.btnTextOn : skin.btnText;
+  const Rgb tc = on ? skin.btnTextOn : offText;
   text(cr, w.label, w.x + w.w * 0.5, w.y + w.h * 0.5 + 3.5, 9.0, 1, tc.r,
        tc.g, tc.b);
 }
 
 void Panel::drawButton(cairo_t* cr, const Widget& w, bool lit) const {
   const Skin skin = skinFor(1);
-  const Rgb base = lit ? skin.btnOn : skin.btnOff;
+  const Rgb base =
+      lit ? skin.btnOn : (w.onSilver ? Rgb{0.40, 0.42, 0.45} : skin.btnOff);
   cairo_pattern_t* pat = cairo_pattern_create_linear(0, w.y, 0, w.y + w.h);
   const Rgb hi = mix(base, {1, 1, 1}, lit ? 0.10 : 0.07);
   const Rgb lo = mix(base, {0, 0, 0}, 0.10);
@@ -944,7 +1012,9 @@ void Panel::drawButton(cairo_t* cr, const Widget& w, bool lit) const {
   cairo_set_line_width(cr, 1.0);
   roundRect(cr, w.x + 0.5, w.y + 0.5, w.w - 1, w.h - 1, 3);
   cairo_stroke(cr);
-  const Rgb tc = lit ? skin.btnTextOn : skin.btnText;
+  const Rgb tc =
+      lit ? skin.btnTextOn
+          : (w.onSilver ? Rgb{0.12, 0.13, 0.14} : skin.btnText);
   text(cr, w.label, w.x + w.w * 0.5, w.y + w.h * 0.5 + 4, 10.0, 1, tc.r,
        tc.g, tc.b);
 }
