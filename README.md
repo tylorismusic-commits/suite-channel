@@ -133,12 +133,21 @@ cmake --install build
 The LV2 bundle is `~/.lv2/suite-channel.lv2`; the CLAP is
 `~/.clap/SuiteChannel.clap`.
 
+## URI stability
+
+The LV2 URI is
+`https://github.com/tylorismusic-commits/suite-channel`. It embeds the GitHub
+path, so renaming the repository or moving the project would break every saved
+session. Treat the URI as permanent.
+
 ## Current status
 
 0.1.0 is the first working vertical strip: CLAP and LV2 load, the editor
-renders, the DSP runs, and the factory presets are generated. The next passes
-are EQ parity measurement against the upstream core, the full host matrix, and
-UI polish (input metering, fader scale refinement, and preset retuning).
+renders, the DSP runs, the factory presets are generated, and the state tests
+cover VCA/76, Brown/Black, presets, expander/gate, power bypass and all
+oversampling modes. The remaining gates are the explicit EQ parity measurement
+against the upstream Dusk core, the full Ardour/Carla/REAPER matrix, and an
+input level meter.
 
 ## Licence
 

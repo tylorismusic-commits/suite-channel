@@ -198,10 +198,27 @@ add_dependencies(suite_lv2_host_test suite_channel_lv2_bundle)
 add_test(NAME suite_lv2_host
   COMMAND suite_lv2_host_test "${CMAKE_BINARY_DIR}/lv2/suite-channel.lv2/suite_channel.so")
 
+add_executable(suite_lv2_ui_host_test test/lv2_ui_host_test.cpp)
+target_include_directories(suite_lv2_ui_host_test PRIVATE
+  "${CMAKE_SOURCE_DIR}/src")
+target_link_libraries(suite_lv2_ui_host_test PRIVATE
+  PkgConfig::X11 ${CMAKE_DL_LIBS})
+target_compile_features(suite_lv2_ui_host_test PRIVATE cxx_std_17)
+add_dependencies(suite_lv2_ui_host_test suite_channel_lv2_bundle)
+if(XVFB_RUN)
+  add_test(NAME suite_lv2_ui_host
+    COMMAND "${XVFB_RUN}" -a -s "-screen 0 1600x1200x24"
+      "$<TARGET_FILE:suite_lv2_ui_host_test>" "${CMAKE_BINARY_DIR}/lv2/suite-channel.lv2")
+else()
+  add_test(NAME suite_lv2_ui_host
+    COMMAND suite_lv2_ui_host_test "${CMAKE_BINARY_DIR}/lv2/suite-channel.lv2")
+endif()
+
 # ---------------------------------------------------------------------------
 # Distribution
 # ---------------------------------------------------------------------------
 add_custom_target(dist
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/dist"
   COMMAND ${CMAKE_COMMAND} -E tar czf
           "${CMAKE_BINARY_DIR}/dist/suite-channel-${PROJECT_VERSION}-linux-x86_64.tar.gz"
           lv2/suite-channel.lv2 clap/SuiteChannel.clap clap/SuiteChannel.resources
