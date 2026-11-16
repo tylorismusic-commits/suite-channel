@@ -147,6 +147,9 @@ private:
   bool commitTextEntry(Shared& shared, PanelState& state);
   bool hitTextEntry(double x, double y) const;
   void pasteClipboard(Shared& shared, PanelState& state) const;
+  static bool flashLit(const std::chrono::steady_clock::time_point& t);
+  mutable std::chrono::steady_clock::time_point copyFlash_{};
+  mutable std::chrono::steady_clock::time_point pasteFlash_{};
 
   double knobValue(const Shared& shared, const Widget& w) const;
   bool isLit(const Shared& shared, const Widget& w) const;

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.2 — 2026-11-16
+
+- Fixed the gate staying shut with Range at maximum: a host that provides a
+  silent buffer for the unpatched optional sidechain port no longer keys the
+  gate. The sidechain is ignored until it carries signal, then latched as the
+  key.
+- COPY and PASTE stay grey and flash green for ~220 ms when they succeed.
+- COPY/PASTE buttons are slightly smaller; the oversampling control is sized
+  to fit "OS OFF" instead of a fixed wide pill, easing header crowding.
+
 ## 0.2.1 — 2026-11-16
 
 - Fixed typed-value entry: the field stays anchored where it opened instead of

@@ -342,9 +342,9 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     Widget os;
     os.kind = Kind::Cycle;
     os.param = P_OVERSAMPLE;
-    os.x = 584;
+    os.x = 616;
     os.y = 18;
-    os.w = 96;
+    os.w = 64;
     os.h = 26;
     widgets_.push_back(os);
   }
@@ -374,19 +374,19 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     Widget c;
     c.kind = Kind::Copy;
     c.x = 391;
-    c.y = 18;
-    c.w = 40;
-    c.h = 26;
+    c.y = 19;
+    c.w = 36;
+    c.h = 24;
     c.label = "COPY";
     widgets_.push_back(c);
   }
   {
     Widget q;
     q.kind = Kind::Paste;
-    q.x = 433;
-    q.y = 18;
-    q.w = 44;
-    q.h = 26;
+    q.x = 431;
+    q.y = 19;
+    q.w = 40;
+    q.h = 24;
     q.label = "PASTE";
     widgets_.push_back(q);
   }
@@ -701,11 +701,18 @@ void Panel::applyAB(Shared& shared, PanelState& state, int target) const {
   state.presetDirty = true;
 }
 
+bool Panel::flashLit(const std::chrono::steady_clock::time_point& t) {
+  return t.time_since_epoch().count() != 0 &&
+         std::chrono::steady_clock::now() < t;
+}
+
 void Panel::copyAB(Shared& shared, PanelState& state) const {
   for (uint32_t p = 0; p < P_COUNT; ++p) {
     state.clipboardValues[p] = shared.get(p);
   }
   state.clipboardValid = true;
+  copyFlash_ =
+      std::chrono::steady_clock::now() + std::chrono::milliseconds(220);
 }
 
 void Panel::pasteClipboard(Shared& shared, PanelState& state) const {
@@ -716,6 +723,8 @@ void Panel::pasteClipboard(Shared& shared, PanelState& state) const {
     shared.set(p, state.clipboardValues[p]);
   }
   state.presetDirty = true;
+  pasteFlash_ =
+      std::chrono::steady_clock::now() + std::chrono::milliseconds(220);
 }
 
 void Panel::beginTextEntry(Shared& shared, PanelState& state, double x,
@@ -1170,10 +1179,10 @@ void Panel::drawWidget(cairo_t* cr, const Widget& w, const Shared& shared,
       drawButton(cr, w, state.activeAB == static_cast<int>(w.value));
       break;
     case Kind::Copy:
-      drawButton(cr, w, false);
+      drawButton(cr, w, flashLit(copyFlash_));
       break;
     case Kind::Paste:
-      drawButton(cr, w, state.clipboardValid);
+      drawButton(cr, w, flashLit(pasteFlash_));
       break;
     case Kind::Hold: {
       std::string label =

@@ -99,12 +99,12 @@ int main() {
   {
     assert(panel.pointerDown(shared, state, 345, 31, false));  // A = 0.9
     panel.pointerUp();
-    assert(panel.pointerDown(shared, state, 411, 31, false));  // COPY
+    assert(panel.pointerDown(shared, state, 409, 31, false));  // COPY
     panel.pointerUp();
     assert(panel.pointerDown(shared, state, 375, 31, false));  // B = 0.5
     panel.pointerUp();
     assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.5) < 1.0e-9);
-    assert(panel.pointerDown(shared, state, 455, 31, false));  // PASTE
+    assert(panel.pointerDown(shared, state, 451, 31, false));  // PASTE
     panel.pointerUp();
     assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.9) < 1.0e-9);
   }

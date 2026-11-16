@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.2.1** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.2.2** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -93,7 +93,9 @@ These are the 4K EQ 2 calibrated filters.
 - A fast peak envelope feeds the detector, so the gate does not chatter on
   zero crossings.
 - Variable hysteresis prevents chatter; the gate is before the compressor.
-- A patched sidechain keys the detector in gate and ducker modes.
+- A patched sidechain keys the detector in gate and ducker modes. A silent
+  buffer on an unpatched sidechain port is ignored until the port actually
+  carries signal, so the gate cannot lock closed by accident.
 - **GATE**: gate in/out.
 
 ### Output / metering
@@ -164,9 +166,11 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.2.1 adds **PASTE** and fixes the typed-value field (it stays anchored when
-opened and takes keyboard focus), centres the gate button rows and makes every
-parameter report the same option names in the editor and the host.
+0.2.2 fixes the gate locking closed when a host supplied a silent sidechain
+buffer, flashes COPY/PASTE green on success, compacts those buttons and sizes
+the oversampling control to its text. 0.2.1 added **PASTE** and fixed the
+typed-value field, centres the gate button rows and makes every parameter
+report the same option names in the editor and the host.
 0.2.0 added gate **Hold** and **Ducker** modes, an output **LIMIT** switch,
 typed value entry, double-click reset, drag value bubbles and A/B compare.
 0.1.6 put output unity at 3/4 travel, with +12 dB at the top and off at the

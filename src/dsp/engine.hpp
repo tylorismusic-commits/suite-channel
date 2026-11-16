@@ -95,7 +95,18 @@ public:
       float* r = right + start;
       const float* scL = scLeft ? scLeft + start : nullptr;
       const float* scR = scRight ? scRight + start : nullptr;
-      const bool scActive = scL && scR;
+      // A host may provide a silent buffer for an unpatched optional
+      // sidechain. Treat the key as connected only after it carries signal;
+      // otherwise an unpatched gate would be keyed by silence and never open.
+      if (scL && scR) {
+        for (int i = 0; i < n; ++i) {
+          if (std::fabs(scL[i]) > 1.0e-6f || std::fabs(scR[i]) > 1.0e-6f) {
+            sidechainSeen_ = true;
+            break;
+          }
+        }
+      }
+      const bool scActive = scL && scR && sidechainSeen_;
       for (int i = 0; i < n; ++i) {
         dryL_[i] = l[i];
         dryR_[i] = r[i];
@@ -185,7 +196,10 @@ public:
     meters.outVuDb = meters.outPeakDb;
   }
 
+  void resetSidechainLatch() noexcept { sidechainSeen_ = false; }
+
   void reset() noexcept {
+    sidechainSeen_ = false;
     colour_.reset();
     gate_.reset();
     vca_.reset();
@@ -292,6 +306,7 @@ private:
 
   std::array<float, kMaxBlock> dryL_{};
   std::array<float, kMaxBlock> dryR_{};
+  bool sidechainSeen_ = false;
   std::array<float, kMaxBlock> preEqL_{};
   std::array<float, kMaxBlock> preEqR_{};
   std::array<float, kEqDelay> eqDelayL_{};

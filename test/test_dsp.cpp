@@ -226,6 +226,49 @@ int main() {
     assert(duckMeters.gateGrDb > 30.0f);
   }
 
+  // --- A silent unpatched sidechain must not lock the gate closed ---------
+  {
+    suite::Shared scShared;
+    suite::Engine scEngine;
+    suite::Meters scMeters;
+    scShared.set(suite::P_COMP_IN, 0.0);
+    scShared.set(suite::P_GATE_IN, 1.0);
+    scShared.set(suite::P_GATE_MODE, 1.0);
+    scShared.set(suite::P_GATE_THRESHOLD, (-20.0 + 30.0) / 40.0);
+    scShared.set(suite::P_GATE_RANGE, 1.0);
+    scShared.set(suite::P_GATE_RELEASE, 0.0);
+    scEngine.prepare(48000.0f, 0.0f);
+    scEngine.setControls(suite::controlsFrom(scShared));
+    std::vector<float> ml(512), mr(512), sl(512, 0.0f), sr(512, 0.0f);
+
+    // Host offers a silent sidechain buffer but it was never patched: the
+    // gate must still key from the main signal and open on a hit.
+    for (int block = 0; block < 30; ++block) {
+      fillSine(ml, mr, -6.0f, 1000.0f, block * 512);
+      scEngine.process(ml.data(), mr.data(), 512, scMeters, sl.data(),
+                       sr.data());
+    }
+    std::printf("gate GR with silent unpatched sidechain: %.2f dB\n",
+                scMeters.gateGrDb);
+    assert(scMeters.gateGrDb < 1.0f);
+
+    // Once the sidechain carries signal it becomes the key: a silent key now
+    // closes the gate even though the main signal is loud.
+    fillSine(sl, sr, -6.0f, 2000.0f, 0);
+    scEngine.process(ml.data(), mr.data(), 512, scMeters, sl.data(),
+                     sr.data());
+    std::fill(sl.begin(), sl.end(), 0.0f);
+    std::fill(sr.begin(), sr.end(), 0.0f);
+    for (int block = 0; block < 60; ++block) {
+      fillSine(ml, mr, -6.0f, 1000.0f, block * 512);
+      scEngine.process(ml.data(), mr.data(), 512, scMeters, sl.data(),
+                       sr.data());
+    }
+    std::printf("gate GR keyed by silent sidechain: %.2f dB\n",
+                scMeters.gateGrDb);
+    assert(scMeters.gateGrDb > 30.0f);
+  }
+
   // --- Output limiter is a real switch ------------------------------------
   {
     auto measure = [](bool limiterOn) {
