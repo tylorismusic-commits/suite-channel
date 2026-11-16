@@ -132,10 +132,15 @@ int main(int argc, char** argv) {
       plugin->get_extension(plugin, CLAP_EXT_GUI));
   if (gui && gui->is_api_supported &&
       gui->is_api_supported(plugin, CLAP_WINDOW_API_X11, false)) {
+    uint32_t gw = 0;
+    uint32_t gh = 0;
+    if (gui->get_size && gui->get_size(plugin, &gw, &gh)) {
+      std::printf("gui size: %ux%u\n", gw, gh);
+    }
     Display* dpy = XOpenDisplay(nullptr);
     if (dpy) {
       const Window win = XCreateSimpleWindow(
-          dpy, DefaultRootWindow(dpy), 0, 0, 560, 1040, 0, 0, 0);
+          dpy, DefaultRootWindow(dpy), 0, 0, 700, 1040, 0, 0, 0);
       XMapWindow(dpy, win);
       XFlush(dpy);
       clap_window_t cw{};

@@ -8,8 +8,8 @@
 #include "ui/panel.hpp"
 
 int main() {
-  cairo_surface_t* surface =
-      cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 560, 1040);
+  cairo_surface_t* surface = cairo_image_surface_create(
+      CAIRO_FORMAT_ARGB32, suite::kPanelWidth, suite::kPanelHeight);
   cairo_t* cr = cairo_create(surface);
 
   suite::Shared shared;

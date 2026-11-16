@@ -75,6 +75,20 @@ std::string bundleResourceDir() {
 // thread so the host's audio and main threads are never blocked on drawing.
 // ---------------------------------------------------------------------------
 
+// Fit the 700x1040 panel into the current screen by default, leaving room for
+// the host's window decorations and a bottom transport/dock.
+double fitScaleForScreen() {
+  Display* dpy = XOpenDisplay(nullptr);
+  if (!dpy) {
+    return 0.9;
+  }
+  const int screen = DefaultScreen(dpy);
+  const int screenH = DisplayHeight(dpy, screen);
+  XCloseDisplay(dpy);
+  const double fit = (screenH - 140.0) / static_cast<double>(kPanelHeight);
+  return clampScale(std::min(1.0, std::max(kMinUiScale, fit)));
+}
+
 class Editor {
 public:
   explicit Editor(Shared& shared) : shared_(shared) {}
@@ -85,6 +99,10 @@ public:
 
   double scale() const { return scale_.load(std::memory_order_relaxed); }
   UiSize size() const { return sizeForScale(scale()); }
+
+  void setScale(double scale) {
+    scale_.store(clampScale(scale), std::memory_order_relaxed);
+  }
 
   // Host thread: record the request only.  All Xlib calls happen on the
   // editor thread, because Xlib is not thread-safe and calling
@@ -941,6 +959,9 @@ Plugin* createPlugin(const clap_host_t* host) {
   s->plugin.get_extension = pluginGetExtension;
   s->plugin.on_main_thread = pluginOnMainThread;
   s->engine.prepare(48000.0f);
+  // Open at a size that fits the current screen unless a saved state says
+  // otherwise.
+  s->editor.setScale(fitScaleForScreen());
   // Latency may only change while the plugin is being activated, so the
   // oversampling switch is applied on the host's restart, not mid-block.
   s->engine.setDeferOversample(true);

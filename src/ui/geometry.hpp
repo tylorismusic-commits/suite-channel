@@ -10,13 +10,13 @@
 
 namespace suite {
 
-// The editor is laid out once in logical units (560 x 1040) and scaled
-// uniformly.  Scales move in steps of 1/80, because 560 = 7 * 80 and
-// 1040 = 13 * 80: every step gives an exact 560:1040 window, with no rounding
+// The editor is laid out once in logical units (700 x 1040) and scaled
+// uniformly.  Scales move in steps of 1/20, because 700 = 35 * 20 and
+// 1040 = 52 * 20: every step gives an exact 700:1040 window, with no rounding
 // drift between width and height.
-constexpr int kScaleSteps = 80;
-constexpr int kMinScaleStep = 40;   // 0.5x
-constexpr int kMaxScaleStep = 200;  // 2.5x
+constexpr int kScaleSteps = 20;
+constexpr int kMinScaleStep = 10;   // 0.5x
+constexpr int kMaxScaleStep = 50;   // 2.5x
 constexpr double kMinUiScale = static_cast<double>(kMinScaleStep) / kScaleSteps;
 constexpr double kMaxUiScale = static_cast<double>(kMaxScaleStep) / kScaleSteps;
 

@@ -38,6 +38,7 @@ void render(const char* path, double scale) {
 
 int main() {
   render("suite-channel.png", 1.0);
+  render("suite-channel-0.9x.png", 0.9);
   render("suite-channel@2x.png", 2.0);
   return 0;
 }

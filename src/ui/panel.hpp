@@ -11,7 +11,7 @@
 
 namespace suite {
 
-constexpr int kPanelWidth = 560;
+constexpr int kPanelWidth = 700;
 constexpr int kPanelHeight = 1040;
 
 struct PanelState {

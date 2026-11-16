@@ -232,8 +232,13 @@ LV2UI_Handle uiInstantiate(const LV2UI_Descriptor*, const char* /*pluginUri*/,
   }
 
   const int screen = DefaultScreen(ui->dpy);
-  const double initialScale =
+  const int screenH = DisplayHeight(ui->dpy, screen);
+  const double fitScale = suite::clampScale(std::min(
+      1.0, std::max(suite::kMinUiScale,
+                    (screenH - 140.0) / suite::kPanelHeight)));
+  const double requested =
       scaleHint && *scaleHint > 0.0f ? suite::clampScale(*scaleHint) : 1.0;
+  const double initialScale = std::min(requested, fitScale);
   const suite::UiSize initial = suite::sizeForScale(initialScale);
   ui->width = initial.width;
   ui->height = initial.height;

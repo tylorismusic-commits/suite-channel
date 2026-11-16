@@ -109,7 +109,7 @@ constexpr double kPi = 3.14159265358979323846;
 
 constexpr double kPresetX = 64.0;
 constexpr double kPresetY = 14.0;
-constexpr double kPresetW = 240.0;
+constexpr double kPresetW = 280.0;
 constexpr double kPresetH = 32.0;
 constexpr double kListY = 50.0;
 constexpr double kListRow = 20.0;
@@ -256,7 +256,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
   auto knob = [&](uint32_t param, double x, double y, double r,
                   const char* label, std::vector<const char*> scale,
-                  bool below = false) {
+                  bool below = false, double scaleRadius = 1.44) {
     Widget w;
     w.kind = Kind::Knob;
     w.param = param;
@@ -266,6 +266,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     w.label = label;
     w.scale = std::move(scale);
     w.labelBelow = below;
+    w.scaleRadius = scaleRadius;
     widgets_.push_back(w);
   };
 
@@ -282,19 +283,18 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     widgets_.push_back(b);
   };
 
-  auto toggle = [&](uint32_t param, double x, double y, double value,
-                    const char* top, const char* bottom) {
-    Widget t;
-    t.kind = Kind::Toggle;
-    t.param = param;
-    t.x = x;
-    t.y = y;
-    t.w = 30;
-    t.h = 44;
-    t.value = value;
-    t.label = top;
-    t.buttonText = {top, bottom};
-    widgets_.push_back(t);
+  auto button = [&](uint32_t param, double x, double y, double w, double h,
+                    double value, const char* label) {
+    Widget b;
+    b.kind = Kind::Button;
+    b.param = param;
+    b.x = x;
+    b.y = y;
+    b.w = w;
+    b.h = h;
+    b.value = value;
+    b.label = label;
+    widgets_.push_back(b);
   };
 
   // Header.
@@ -311,9 +311,9 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     Widget os;
     os.kind = Kind::Cycle;
     os.param = P_OVERSAMPLE;
-    os.x = 448;
+    os.x = 580;
     os.y = 18;
-    os.w = 96;
+    os.w = 100;
     os.h = 26;
     widgets_.push_back(os);
   }
@@ -326,77 +326,79 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     t.kind = Kind::ModelTab;
     t.param = P_COLOR_MODEL;
     t.value = i;
-    t.x = 24 + i * 104;
+    t.x = 24 + i * 132;
     t.y = 66;
-    t.w = 98;
+    t.w = 124;
     t.h = 38;
     t.label = kTabNames[i];
     widgets_.push_back(t);
   }
 
   // Input / colour.
-  knob(P_INPUT, 70, 180, 26, "INPUT", sc(kScaleInput), true);
-  knob(P_COLOR_AMOUNT, 160, 180, 22, "COLOUR", sc(kScaleAmount), true);
-  pill(P_POLARITY, 150, 132, 58, 20, "\u00d8");
+  knob(P_INPUT, 80, 176, 28, "INPUT", sc(kScaleInput), true);
+  knob(P_COLOR_AMOUNT, 180, 176, 24, "COLOUR", sc(kScaleAmount), true);
+  pill(P_POLARITY, 165, 132, 64, 20, "\u00d8");
 
   // Dynamics.
-  toggle(P_COMP_TYPE, 170, 286, 1.0, "76", "VCA");
-  pill(P_DYN_POST, 104, 288, 58, 22, "POST EQ");
+  pill(P_DYN_POST, 90, 286, 56, 22, "POST EQ");
+  button(P_COMP_TYPE, 150, 286, 44, 22, 0.0, "VCA");
+  button(P_COMP_TYPE, 198, 286, 44, 22, 1.0, "76");
 
-  knob(P_COMP_THRESHOLD, 70, 366, 24, "THRESH",
+  knob(P_COMP_THRESHOLD, 80, 366, 26, "THRESH",
        sc(kScaleCompThresh), true);
-  knob(P_COMP_MAKEUP, 160, 366, 22, "MAKEUP", sc(kScaleMakeup), true);
-  toggle(P_COMP_FAST, 44, 442, 1.0, "FAST", "SLOW");
-  pill(P_COMP_AUTO, 96, 442, 54, 22, "AUTO");
-  pill(P_COMP_IN, 96, 468, 54, 22, "COMP");
+  knob(P_COMP_MAKEUP, 180, 366, 24, "MAKEUP", sc(kScaleMakeup), true);
+  pill(P_COMP_FAST, 44, 430, 58, 22, "F.ATK");
+  pill(P_COMP_AUTO, 112, 430, 56, 22, "AUTO");
+  pill(P_COMP_IN, 112, 456, 56, 22, "COMP");
 
-  knob(P_GATE_THRESHOLD, 70, 542, 24, "THRESH",
+  // Gate.
+  knob(P_GATE_THRESHOLD, 80, 542, 26, "THRESH",
        sc(kScaleGateThresh), true);
-  knob(P_GATE_RANGE, 160, 542, 22, "RANGE", sc(kScaleRange), true);
-  knob(P_GATE_RELEASE, 70, 620, 22, "RELEASE", sc(kScaleRelease), true);
-  toggle(P_GATE_FAST, 150, 610, 1.0, "FAST", "SLOW");
-  toggle(P_GATE_MODE, 190, 610, 1.0, "GATE", "EXP");
-  pill(P_GATE_IN, 96, 674, 54, 22, "GATE");
+  knob(P_GATE_RANGE, 180, 542, 24, "RANGE", sc(kScaleRange), true);
+  knob(P_GATE_RELEASE, 80, 620, 24, "RELEASE", sc(kScaleRelease), true);
+  pill(P_GATE_FAST, 150, 610, 58, 22, "F.ATK");
+  button(P_GATE_MODE, 140, 640, 48, 22, 1.0, "GATE");
+  button(P_GATE_MODE, 192, 640, 48, 22, 0.0, "EXP");
+  pill(P_GATE_IN, 80, 670, 56, 22, "GATE IN");
 
   // Filters.
-  knob(P_HPF, 70, 776, 24, "HPF", sc(kScaleHPF), true);
-  knob(P_LPF, 160, 776, 24, "LPF", sc(kScaleLPF), true);
+  knob(P_HPF, 80, 776, 26, "HPF", sc(kScaleHPF), true);
+  knob(P_LPF, 180, 776, 26, "LPF", sc(kScaleLPF), true);
 
   // EQ.
-  toggle(P_EQ_TYPE, 390, 124, 0.0, "BLACK", "BROWN");
-  widgets_.back().h = 34;
-  pill(P_EQ_IN, 330, 136, 48, 22, "EQ IN");
+  pill(P_EQ_IN, 350, 136, 52, 22, "EQ IN");
+  button(P_EQ_TYPE, 330, 840, 62, 22, 0.0, "BROWN");
+  button(P_EQ_TYPE, 398, 840, 62, 22, 1.0, "BLACK");
 
   // HF.
-  knob(P_HF_GAIN, 300, 208, 24, "HF", sc(kScaleGain), true);
-  knob(P_HF_FREQ, 370, 208, 20, "FREQ", sc(kScaleFreqHF), true);
-  toggle(P_HF_BELL, 400, 272, 1.0, "BELL", "SHELF");
-  widgets_.back().h = 30;
+  knob(P_HF_GAIN, 330, 208, 28, "HF", sc(kScaleGain), true, 1.35);
+  knob(P_HF_FREQ, 405, 208, 22, "FREQ", sc(kScaleFreqHF), true, 1.30);
+  pill(P_HF_BELL, 450, 272, 52, 22, "BELL");
 
   // HMF.
-  knob(P_HM_GAIN, 300, 360, 24, "HMF", sc(kScaleGain), true);
-  knob(P_HM_FREQ, 370, 360, 20, "FREQ", sc(kScaleFreqHM), true);
-  knob(P_HM_Q, 400, 414, 20, "Q", sc(kScaleQ), true);
+  knob(P_HM_GAIN, 330, 360, 28, "HMF", sc(kScaleGain), true, 1.35);
+  knob(P_HM_FREQ, 405, 360, 22, "FREQ", sc(kScaleFreqHM), true, 1.30);
+  knob(P_HM_Q, 452, 410, 22, "Q", sc(kScaleQ), true, 1.30);
 
   // LMF.
-  knob(P_LM_GAIN, 300, 512, 24, "LMF", sc(kScaleGain), true);
-  knob(P_LM_FREQ, 370, 512, 20, "FREQ", sc(kScaleFreqLM), true);
-  knob(P_LM_Q, 400, 566, 20, "Q", sc(kScaleQ), true);
+  knob(P_LM_GAIN, 330, 512, 28, "LMF", sc(kScaleGain), true, 1.35);
+  knob(P_LM_FREQ, 405, 512, 22, "FREQ", sc(kScaleFreqLM), true, 1.30);
+  knob(P_LM_Q, 452, 562, 22, "Q", sc(kScaleQ), true, 1.30);
 
   // LF.
-  knob(P_LF_GAIN, 300, 664, 24, "LF", sc(kScaleGain), true);
-  knob(P_LF_FREQ, 370, 664, 20, "FREQ", sc(kScaleFreqLF), true);
-  toggle(P_LF_BELL, 400, 724, 1.0, "BELL", "SHELF");
+  knob(P_LF_GAIN, 330, 664, 28, "LF", sc(kScaleGain), true, 1.35);
+  knob(P_LF_FREQ, 405, 664, 22, "FREQ", sc(kScaleFreqLF), true, 1.30);
+  pill(P_LF_BELL, 450, 728, 52, 22, "BELL");
 
   // Output fader.
   {
     Widget f;
     f.kind = Kind::Fader;
     f.param = P_OUTPUT;
-    f.x = 444;
-    f.y = 744;
+    f.x = 590;
+    f.y = 168;
     f.w = 72;
-    f.h = 176;
+    f.h = 620;
     f.label = "OUTPUT";
     widgets_.push_back(f);
   }
@@ -455,7 +457,7 @@ void Panel::drawHeader(cairo_t* cr, const Shared& shared,
   cairo_line_to(cr, kPanelWidth, 107.5);
   cairo_stroke(cr);
 
-  text(cr, "SUITE CHANNEL", 378, 38, 14, 1, 0.82, 0.85, 0.88);
+  text(cr, "SUITE CHANNEL", 470, 38, 15, 1, 0.82, 0.85, 0.88);
   drawPresetBar(cr, shared, state);
 }
 
@@ -614,7 +616,7 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
                                    skin.bodyTop.b);
   cairo_pattern_add_color_stop_rgb(pat, 1.0, skin.bodyBottom.r,
                                    skin.bodyBottom.g, skin.bodyBottom.b);
-  roundRect(cr, 16, 116, 528, 888, 6);
+  roundRect(cr, 16, 116, 668, 888, 6);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_pattern_destroy(pat);
@@ -623,7 +625,7 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
     cairo_pattern_t* grain = cairo_pattern_create_for_surface(grain_);
     cairo_pattern_set_extend(grain, CAIRO_EXTEND_REPEAT);
     cairo_save(cr);
-    cairo_rectangle(cr, 17, 117, 526, 886);
+    cairo_rectangle(cr, 17, 117, 666, 886);
     cairo_clip(cr);
     cairo_set_source(cr, grain);
     cairo_paint_with_alpha(cr, 0.018);
@@ -634,14 +636,14 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   cairo_set_line_width(cr, 1.0);
   setRgb(cr, {1, 1, 1}, 0.16);
   cairo_move_to(cr, 18, 117.5);
-  cairo_line_to(cr, 542, 117.5);
+  cairo_line_to(cr, 682, 117.5);
   cairo_stroke(cr);
   setRgb(cr, {0, 0, 0}, 0.22);
   cairo_move_to(cr, 18, 1002.5);
-  cairo_line_to(cr, 542, 1002.5);
+  cairo_line_to(cr, 682, 1002.5);
   cairo_stroke(cr);
 
-  for (double sx : {32.0, 528.0}) {
+  for (double sx : {32.0, 668.0}) {
     for (double sy : {132.0, 988.0}) {
       cairo_arc(cr, sx, sy, 4.5, 0, 2 * kPi);
       setRgb(cr, skin.screw, 0.9);
@@ -666,18 +668,21 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
     cairo_stroke(cr);
   };
 
-  section(24, 124, 192, 112, "INPUT / COLOUR");
-  section(24, 244, 192, 456, "DYNAMICS");
-  section(24, 708, 192, 152, "FILTERS");
-  section(228, 124, 196, 800, "EQUALISER");
-  section(436, 124, 100, 800, "OUTPUT");
+  section(24, 124, 220, 112, "INPUT / COLOUR");
+  section(24, 244, 220, 456, "DYNAMICS");
+  section(24, 708, 220, 152, "FILTERS");
+  section(256, 124, 250, 800, "EQUALISER");
+  section(518, 124, 158, 800, "OUTPUT");
+
+  text(cr, "VOICING", 330, 832, 9.0, 0, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
 
   // Dynamics sub-headers.
   text(cr, "COMP", 34, 322, 10.0, 0, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
-  text(cr, compType == 0 ? "3.5:1" : "4:1", 206, 322, 10.0, 2,
+  text(cr, compType == 0 ? "3.5:1" : "4:1", 236, 322, 10.0, 2,
        skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
-  text(cr, "GATE / EXPANDER", 34, 500, 10.0, 0, skin.legendDim.r,
+  text(cr, "GATE / EXPANDER", 34, 490, 10.0, 0, skin.legendDim.r,
        skin.legendDim.g, skin.legendDim.b);
 
   // EQ band accents and labels.
@@ -689,35 +694,58 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   const double bandY[4] = {164.0, 316.0, 468.0, 620.0};
   for (int i = 0; i < 4; ++i) {
     setRgb(cr, bandCols[i], 0.9);
-    cairo_rectangle(cr, 236, bandY[i], 3, 140);
+    cairo_rectangle(cr, 264, bandY[i], 3, 140);
     cairo_fill(cr);
-    text(cr, bandNames[i], 248, bandY[i] + 16, 12, 0, bandCols[i].r,
+    text(cr, bandNames[i], 276, bandY[i] + 16, 12, 0, bandCols[i].r,
          bandCols[i].g, bandCols[i].b);
   }
 
-  // GR meters.
+  // GR meters: a short LED ladder, like the reference's meter column.
   auto grMeter = [&](double x, double y, double w, double h, float gr,
                      double maxGr, Rgb colour, const char* label) {
     roundRect(cr, x, y, w, h, 3);
-    cairo_set_source_rgba(cr, 0.03, 0.03, 0.04, 0.9);
+    cairo_set_source_rgba(cr, 0.02, 0.02, 0.03, 0.95);
     cairo_fill(cr);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.10);
+    roundRect(cr, x + 0.5, y + 0.5, w - 1, h - 1, 3);
+    cairo_stroke(cr);
+
+    constexpr int kSegments = 14;
+    const double top = y + 5.0;
+    const double bottom = y + h - 5.0;
+    const double segH = (bottom - top) / kSegments;
     const double f = clamp01(static_cast<double>(gr) / maxGr);
-    if (f > 0.0) {
-      roundRect(cr, x + 2, y + 2, w - 4, (h - 4) * f, 2);
-      setRgb(cr, colour, 0.95);
+    for (int i = 0; i < kSegments; ++i) {
+      const double sy = top + i * segH;
+      const bool lit = f * kSegments > static_cast<double>(i);
+      roundRect(cr, x + 4, sy + 1, w - 8, segH - 2, 1.5);
+      if (lit) {
+        setRgb(cr, colour, 0.95);
+      } else {
+        setRgb(cr, mix(colour, {0, 0, 0}, 0.78), 0.65);
+      }
       cairo_fill(cr);
+    }
+    // Scale ticks at 0, half and full.
+    cairo_set_source_rgba(cr, 1, 1, 1, 0.20);
+    for (double frac : {0.0, 0.5, 1.0}) {
+      const double ty = top + (bottom - top) * frac;
+      cairo_move_to(cr, x + 1, ty);
+      cairo_line_to(cr, x + 4, ty);
+      cairo_stroke(cr);
     }
     text(cr, label, x + w * 0.5, y + h + 12, 8.5, 1, skin.legendDim.r,
          skin.legendDim.g, skin.legendDim.b);
   };
-  grMeter(446, 168, 22, 150, state.grDb, 24.0, {0.95, 0.55, 0.20}, "COMP");
-  grMeter(478, 168, 22, 150, state.gateGrDb, 40.0, {0.35, 0.80, 0.45},
+  grMeter(528, 168, 28, 180, state.grDb, 24.0, {0.95, 0.55, 0.20}, "COMP");
+  grMeter(562, 168, 28, 180, state.gateGrDb, 40.0, {0.35, 0.80, 0.45},
           "GATE");
 
-  // Output level meter.
-  drawLevelMeter(cr, 446, 360, 56, 260, state.outLevelL, state.outLevelR,
-                 -60.0, 6.0, false);
-  text(cr, "OUT", 474, 636, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
+  // Output level meter, to the left of the long fader.
+  drawLevelMeter(cr, 528, 380, 44, 300, state.outLevelL, state.outLevelR,
+                 -60.0, 6.0, true);
+  text(cr, "OUT", 550, 696, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
 
   // Footer.
@@ -943,72 +971,134 @@ void Panel::drawFader(cairo_t* cr, const Widget& w, double value) const {
   const double cx = w.x + w.w * 0.5;
   const double top = w.y + 12;
   const double bottom = w.y + w.h - 12;
-
-  roundRect(cr, cx - 3, top, 6, bottom - top, 3);
-  setRgb(cr, {0.03, 0.03, 0.04}, 0.9);
-  cairo_fill(cr);
-
   const double f = clamp01(value);
   const double hy = bottom - f * (bottom - top);
-  roundRect(cr, cx - 2, hy, 4, bottom - hy, 2);
-  setRgb(cr, skin.tabOn, 0.95);
-  cairo_fill(cr);
 
-  roundRect(cr, cx - 18, hy - 9, 36, 18, 3);
-  cairo_pattern_t* handle = cairo_pattern_create_linear(0, hy - 9, 0, hy + 9);
-  cairo_pattern_add_color_stop_rgb(handle, 0.0, 0.72, 0.74, 0.77);
-  cairo_pattern_add_color_stop_rgb(handle, 1.0, 0.42, 0.44, 0.47);
-  cairo_set_source(cr, handle);
-  cairo_fill(cr);
-  cairo_pattern_destroy(handle);
-
-  cairo_set_source_rgba(cr, 1, 1, 1, 0.35);
+  // Long fader scale, like the reference's centre-section fader.
+  cairo_set_source_rgba(cr, 1, 1, 1, 0.14);
   cairo_set_line_width(cr, 1.0);
-  cairo_move_to(cr, cx - 14, hy);
-  cairo_line_to(cr, cx + 14, hy);
+  cairo_move_to(cr, cx - 34, top);
+  cairo_line_to(cr, cx - 34, bottom);
+  cairo_stroke(cr);
+  for (int i = 0; i <= 8; ++i) {
+    const double frac = i / 8.0;
+    const double ty = bottom - frac * (bottom - top);
+    const double len = (i == 4) ? 11.0 : 5.0;
+    cairo_move_to(cr, cx - 34, ty);
+    cairo_line_to(cr, cx - 34 + len, ty);
+    cairo_stroke(cr);
+  }
+  cairo_set_source_rgba(cr, 1, 1, 1, 0.16);
+  cairo_move_to(cr, cx - 36, (top + bottom) * 0.5);
+  cairo_line_to(cr, cx + 30, (top + bottom) * 0.5);
   cairo_stroke(cr);
 
-  text(cr, w.label, cx, w.y - 8, 9.5, 1, skin.legend.r, skin.legend.g,
-       skin.legend.b);
+  // Dark groove with a thin centre line; the Reapertips-style thumb is a
+  // dark cap with a light, ribbed grip rather than a plastic knob.
+  roundRect(cr, cx - 7, top, 14, bottom - top, 4);
+  setRgb(cr, {0.035, 0.038, 0.045}, 0.98);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, 1, 1, 1, 0.08);
+  cairo_move_to(cr, cx - 6.5, top + 4);
+  cairo_line_to(cr, cx - 6.5, bottom - 4);
+  cairo_stroke(cr);
+  cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
+  cairo_move_to(cr, cx, top + 4);
+  cairo_line_to(cr, cx, bottom - 4);
+  cairo_stroke(cr);
 
-  text(cr, "+18", cx + 26, top + 4, 8.0, 0, skin.legendDim.r,
-       skin.legendDim.g, skin.legendDim.b);
-  text(cr, "0", cx + 26, (top + bottom) * 0.5 + 3, 8.0, 0,
-       skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
-  text(cr, "-18", cx + 26, bottom + 2, 8.0, 0, skin.legendDim.r,
-       skin.legendDim.g, skin.legendDim.b);
+  // Thumb: dark outer cap, light inset grip, horizontal ribs.
+  roundRect(cr, cx - 25, hy - 15, 50, 30, 4);
+  cairo_pattern_t* cap = cairo_pattern_create_linear(0, hy - 15, 0, hy + 15);
+  cairo_pattern_add_color_stop_rgb(cap, 0.0, 0.22, 0.23, 0.25);
+  cairo_pattern_add_color_stop_rgb(cap, 1.0, 0.075, 0.08, 0.09);
+  cairo_set_source(cr, cap);
+  cairo_fill(cr);
+  cairo_pattern_destroy(cap);
+  cairo_set_source_rgba(cr, 1, 1, 1, 0.20);
+  roundRect(cr, cx - 24.5, hy - 14.5, 49, 29, 4);
+  cairo_stroke(cr);
+
+  roundRect(cr, cx - 13, hy - 10, 26, 20, 3);
+  cairo_set_source_rgba(cr, 0.80, 0.82, 0.84, 0.98);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, 0.12, 0.13, 0.14, 0.70);
+  cairo_set_line_width(cr, 1.0);
+  for (int i = -4; i <= 4; ++i) {
+    const double ly = hy + i * 2.0;
+    cairo_move_to(cr, cx - 9, ly);
+    cairo_line_to(cr, cx + 9, ly);
+    cairo_stroke(cr);
+  }
+
+  const char* marks[] = {"+18", "+9", "0", "-9", "-18"};
+  for (int i = 0; i < 5; ++i) {
+    const double frac = 1.0 - i / 4.0;
+    const double ty = bottom - frac * (bottom - top);
+    text(cr, marks[i], cx + 28, ty + 3, 7.5, 0, skin.legendDim.r,
+         skin.legendDim.g, skin.legendDim.b);
+  }
 }
 
 void Panel::drawLevelMeter(cairo_t* cr, double x, double y, double w, double h,
                            double dbL, double dbR, double minDb,
                            double maxDb, bool labelsRight) const {
-  (void)labelsRight;
+  const Skin skin = skinFor(1);
   roundRect(cr, x, y, w, h, 3);
-  cairo_set_source_rgba(cr, 0.03, 0.03, 0.04, 0.9);
+  cairo_set_source_rgba(cr, 0.02, 0.02, 0.03, 0.95);
   cairo_fill(cr);
+  cairo_set_line_width(cr, 1.0);
+  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.10);
+  roundRect(cr, x + 0.5, y + 0.5, w - 1, h - 1, 3);
+  cairo_stroke(cr);
+
+  constexpr int kSegments = 18;
+  const double top = y + 4.0;
+  const double bottom = y + h - 4.0;
+  const double segH = (bottom - top) / kSegments;
 
   auto bar = [&](double bx, double db) {
-    const double f = clamp01((db - minDb) / (maxDb - minDb));
-    const double bh = (h - 4) * f;
-    if (bh <= 0.0) {
-      return;
+    for (int i = 0; i < kSegments; ++i) {
+      const double sy = bottom - (i + 1) * segH;
+      const double segDb =
+          minDb + (maxDb - minDb) * (i + 1) / kSegments;
+      const bool lit = db >= segDb;
+      roundRect(cr, bx, sy + 1, 16, segH - 2, 1.5);
+      if (lit) {
+        if (segDb >= -1.0) {
+          setRgb(cr, {0.96, 0.30, 0.22}, 0.98);
+        } else if (segDb >= -6.0) {
+          setRgb(cr, {0.96, 0.78, 0.25}, 0.98);
+        } else {
+          setRgb(cr, {0.35, 0.84, 0.42}, 0.98);
+        }
+      } else {
+        setRgb(cr, {0.07, 0.08, 0.09}, 0.9);
+      }
+      cairo_fill(cr);
     }
-    const double by = y + h - 2 - bh;
-    cairo_save(cr);
-    roundRect(cr, bx, by, 16, bh, 1);
-    cairo_clip(cr);
-    if (db >= -1.0) {
-      setRgb(cr, {0.95, 0.30, 0.22});
-    } else if (db >= -6.0) {
-      setRgb(cr, {0.95, 0.78, 0.25});
-    } else {
-      setRgb(cr, {0.35, 0.82, 0.42});
-    }
-    cairo_paint(cr);
-    cairo_restore(cr);
   };
   bar(x + 5, dbL);
   bar(x + w - 21, dbR);
+
+  if (labelsRight) {
+    const double marks[] = {0.0, -6.0, -12.0, -24.0, -48.0};
+    for (double marked : marks) {
+      if (marked < minDb || marked > maxDb) {
+        continue;
+      }
+      const double f = (marked - minDb) / (maxDb - minDb);
+      const double ly = bottom - f * (bottom - top);
+      cairo_set_source_rgba(cr, 1, 1, 1, 0.16);
+      cairo_move_to(cr, x + 2, ly);
+      cairo_line_to(cr, x + w - 2, ly);
+      cairo_stroke(cr);
+      char label[16];
+      std::snprintf(label, sizeof(label), "%.0f", marked);
+      text(cr, label, x + w + 2, ly + 3, 7.0, 0, skin.legendDim.r,
+           skin.legendDim.g, skin.legendDim.b);
+    }
+  }
 }
 
 void Panel::tick(const Shared& shared, PanelState& state) const {
