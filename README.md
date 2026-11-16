@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.1.3** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.1.4** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -142,7 +142,8 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.1.3 cleans up the gate subheader and control row. 0.1.2 corrected the input
+0.1.4 matches the output fader thumb to the Reapertips 27×53 MCP thumb.
+0.1.3 cleaned up the gate subheader and control row. 0.1.2 corrected the input
 meter to measure after the input trim; 0.1.1 added the stacked stereo input
 level meter. CLAP and LV2
 load, the editor renders, the DSP runs, the factory presets are generated, and

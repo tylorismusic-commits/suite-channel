@@ -23,7 +23,7 @@
     doap:homepage <https://github.com/tylorismusic-commits/suite-channel> ;
     lv2:majorVersion 0 ;
     lv2:minorVersion 1 ;
-    lv2:microVersion 3 ;
+    lv2:microVersion 4 ;
     lv2:binary <suite_channel.so> ;
     rdfs:seeAlso <manifest.ttl> ;
     ui:ui <https://github.com/tylorismusic-commits/suite-channel#ui> ;

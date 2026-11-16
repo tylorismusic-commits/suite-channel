@@ -1111,27 +1111,34 @@ void Panel::drawFader(cairo_t* cr, const Widget& w, double value) const {
   cairo_line_to(cr, cx, bottom - 4);
   cairo_stroke(cr);
 
-  // Thumb: dark outer cap, light inset grip, horizontal ribs.
-  roundRect(cr, cx - 25, hy - 15, 50, 30, 4);
-  cairo_pattern_t* cap = cairo_pattern_create_linear(0, hy - 15, 0, hy + 15);
+  // Thumb: 27x53, matching the Reapertips MCP volume thumb. Dark outer cap,
+  // light inset grip and horizontal ribs.
+  constexpr double kHandleW = 27.0;
+  constexpr double kHandleH = 53.0;
+  roundRect(cr, cx - kHandleW * 0.5, hy - kHandleH * 0.5, kHandleW,
+            kHandleH, 4);
+  cairo_pattern_t* cap =
+      cairo_pattern_create_linear(0, hy - kHandleH * 0.5, 0,
+                                  hy + kHandleH * 0.5);
   cairo_pattern_add_color_stop_rgb(cap, 0.0, 0.22, 0.23, 0.25);
   cairo_pattern_add_color_stop_rgb(cap, 1.0, 0.075, 0.08, 0.09);
   cairo_set_source(cr, cap);
   cairo_fill(cr);
   cairo_pattern_destroy(cap);
   cairo_set_source_rgba(cr, 1, 1, 1, 0.20);
-  roundRect(cr, cx - 24.5, hy - 14.5, 49, 29, 4);
+  roundRect(cr, cx - kHandleW * 0.5 + 0.5, hy - kHandleH * 0.5 + 0.5,
+            kHandleW - 1.0, kHandleH - 1.0, 4);
   cairo_stroke(cr);
 
-  roundRect(cr, cx - 13, hy - 10, 26, 20, 3);
+  roundRect(cr, cx - 7.5, hy - 18, 15, 36, 3);
   cairo_set_source_rgba(cr, 0.80, 0.82, 0.84, 0.98);
   cairo_fill(cr);
   cairo_set_source_rgba(cr, 0.12, 0.13, 0.14, 0.70);
   cairo_set_line_width(cr, 1.0);
-  for (int i = -4; i <= 4; ++i) {
-    const double ly = hy + i * 2.0;
-    cairo_move_to(cr, cx - 9, ly);
-    cairo_line_to(cr, cx + 9, ly);
+  for (int i = -5; i <= 5; ++i) {
+    const double ly = hy + i * 3.0;
+    cairo_move_to(cr, cx - 5, ly);
+    cairo_line_to(cr, cx + 5, ly);
     cairo_stroke(cr);
   }
 

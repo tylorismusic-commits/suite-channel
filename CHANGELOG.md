@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 — 2026-11-16
+
+- Output fader thumb resized to the Reapertips MCP volume-thumb proportions
+  (**27×53 logical px**) with a portrait light ribbed grip.
+- Gate subheader/control-row cleanup from 0.1.3 retained.
+
 ## 0.1.3 — 2026-11-16
 
 - Gate subheader now matches the compressor subheader: title, underline rule
