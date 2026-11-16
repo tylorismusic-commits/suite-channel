@@ -219,8 +219,14 @@ endif()
 # ---------------------------------------------------------------------------
 add_custom_target(dist
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/dist"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "${CMAKE_SOURCE_DIR}/README.md"
+          "${CMAKE_SOURCE_DIR}/LICENSE"
+          "${CMAKE_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
+          "${CMAKE_BINARY_DIR}/"
   COMMAND ${CMAKE_COMMAND} -E tar czf
-          "${CMAKE_BINARY_DIR}/dist/suite-channel-${PROJECT_VERSION}-linux-x86_64.tar.gz"
+          "dist/suite-channel-${PROJECT_VERSION}-linux-x86_64.tar.gz"
+          README.md LICENSE THIRD_PARTY_NOTICES.md
           lv2/suite-channel.lv2 clap/SuiteChannel.clap clap/SuiteChannel.resources
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
   DEPENDS suite_channel_lv2_bundle suite_channel_bundle
