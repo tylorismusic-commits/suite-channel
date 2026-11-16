@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 — 2026-11-16
+
+- Corrected the input meter tap: it now measures **after the input trim** and
+  before the colour stage, instead of before the trim.
+- Verified: −20.0 dB at 0 dB trim and −2.0 dB at +18 dB trim for a −20 dBFS
+  constant input.
+
 ## 0.1.1 — 2026-11-16
 
 - Added a stacked stereo **input level meter** above the output meter, with

@@ -98,9 +98,6 @@ public:
       for (int i = 0; i < n; ++i) {
         dryL_[i] = l[i];
         dryR_[i] = r[i];
-        // Input meter is pre-trim, matching the strip's "IN" label.
-        inPeakL = std::max(inPeakL, std::fabs(l[i]));
-        inPeakR = std::max(inPeakR, std::fabs(r[i]));
 
         float xl = l[i];
         float xr = r[i];
@@ -111,6 +108,9 @@ public:
         const float inGain = inputSmooth_.next();
         xl *= inGain;
         xr *= inGain;
+        // The input meter sits after the input knob, before the colour stage.
+        inPeakL = std::max(inPeakL, std::fabs(xl));
+        inPeakR = std::max(inPeakR, std::fabs(xr));
 
         colour_.process(xl, xr);
 

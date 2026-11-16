@@ -200,6 +200,34 @@ int main() {
     assert(std::fabs(dl[511] - 0.2511886f) < 0.01f);
   }
 
+  // --- Input meter follows the Input knob, not the raw input --------------
+  {
+    suite::Shared inShared;
+    suite::Engine inEngine;
+    suite::Meters inMeters;
+    inShared.set(suite::P_COMP_IN, 0.0);
+    inShared.set(suite::P_GATE_IN, 0.0);
+    inShared.set(suite::P_INPUT, 0.5);  // 0 dB
+    inEngine.prepare(48000.0f, 0.0f);
+    inEngine.setControls(suite::controlsFrom(inShared));
+    std::vector<float> il(512), ir(512);
+    for (int block = 0; block < 30; ++block) {
+      fillConst(il, ir, -20.0f);
+      inEngine.process(il.data(), ir.data(), 512, inMeters);
+    }
+    const float atUnity = inMeters.inPeakLDb;
+    inShared.set(suite::P_INPUT, 1.0);  // +18 dB
+    inEngine.setControls(suite::controlsFrom(inShared));
+    for (int block = 0; block < 30; ++block) {
+      fillConst(il, ir, -20.0f);
+      inEngine.process(il.data(), ir.data(), 512, inMeters);
+    }
+    const float boosted = inMeters.inPeakLDb;
+    std::printf("input meter: %.1f dB at 0 dB trim, %.1f dB at +18 dB\n",
+                atUnity, boosted);
+    assert(boosted - atUnity > 15.0f);
+  }
+
   // --- Brown / Black must change the audio path, not just the UI ----------
   {
     suite::Controls brownControls;
