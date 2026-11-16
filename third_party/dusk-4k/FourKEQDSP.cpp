@@ -1448,8 +1448,9 @@ void FourKEQDSP::processChunk(const float* const* inputs, float* const* outputs,
             wet[c][n] = inputs[c][n] * inGain;
 
     //--- pre-EQ spectrum tap (mono) -------------------------------------------
-    for (int n = 0; n < nS; ++n)
-        preRing.push(nCh == 2 ? 0.5f * (wet[0][n] + wet[1][n]) : wet[0][n]);
+    // Suite Channel does not use the 4K EQ 2 spectrum taps. The per-sample
+    // atomic ring pushes were removed for CPU; the audio path is unchanged.
+    (void)preRing;
 
     //--- M/S encode -----------------------------------------------------------
     const bool ms = pMsMode.load(R) > 0.5f && nCh == 2;
@@ -1582,8 +1583,8 @@ void FourKEQDSP::processChunk(const float* const* inputs, float* const* outputs,
             wet[c][n] *= outGain;
 
     //--- post-EQ spectrum tap (mono) ------------------------------------------
-    for (int n = 0; n < nS; ++n)
-        postRing.push(nCh == 2 ? 0.5f * (wet[0][n] + wet[1][n]) : wet[0][n]);
+    // Removed for Suite Channel; see the pre-EQ tap note above.
+    (void)postRing;
 
     //--- bypass crossfade to bit-exact dry passthrough + output metering ------
     powerSmoother.setTarget(pBypass.load(R) > 0.5f ? 0.0f : 1.0f);

@@ -18,7 +18,8 @@ The files are used under GPL-3.0. See `third_party/dusk-4k/LICENSE` and
 `third_party/dusk-4k/PROVENANCE.txt`. Changes in Suite Channel: the core is
 wrapped by `src/dsp/eq4k.hpp`; its input/output gain, auto-gain, M/S and bypass
 are held neutral, and its internal oversampling is driven by the plugin's OS
-control. The DSP/filter/calibration math is not modified.
+control. The per-sample spectrum-ring pushes were removed because Suite Channel
+has no spectrum display; the audio/filter/calibration math is unchanged.
 
 ## hearth-dsp
 
