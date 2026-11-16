@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.1.2** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.1.3** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -142,8 +142,9 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.1.2 corrects the input meter to measure after the input trim; 0.1.1 added the
-stacked stereo input level meter. CLAP and LV2
+0.1.3 cleans up the gate subheader and control row. 0.1.2 corrected the input
+meter to measure after the input trim; 0.1.1 added the stacked stereo input
+level meter. CLAP and LV2
 load, the editor renders, the DSP runs, the factory presets are generated, and
 the state tests cover VCA/76, Brown/Black, presets, expander/gate, power
 bypass and all oversampling modes. The remaining gates are the explicit EQ

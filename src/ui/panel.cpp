@@ -375,10 +375,10 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   button(P_COMP_TYPE, 168, 286, 44, 22, 1.0, "76");
   widgets_.back().onSilver = silverComp;
 
-  knob(P_COMP_THRESHOLD, 80, 366, 26, "THRESH",
+  knob(P_COMP_THRESHOLD, 80, 372, 26, "THRESH",
        sc(kScaleCompThresh), true);
   widgets_.back().onSilver = silverComp;
-  knob(P_COMP_MAKEUP, 180, 366, 24, "MAKEUP", sc(kScaleMakeup), true);
+  knob(P_COMP_MAKEUP, 180, 372, 24, "MAKEUP", sc(kScaleMakeup), true);
   widgets_.back().onSilver = silverComp;
   pill(P_COMP_FAST, 44, 430, 58, 22, "F.ATK");
   widgets_.back().onSilver = silverComp;
@@ -388,14 +388,14 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   widgets_.back().onSilver = silverComp;
 
   // Gate.
-  knob(P_GATE_THRESHOLD, 80, 542, 26, "THRESH",
+  knob(P_GATE_THRESHOLD, 60, 550, 24, "THRESH",
        sc(kScaleGateThresh), true);
-  knob(P_GATE_RANGE, 180, 542, 24, "RANGE", sc(kScaleRange), true);
-  knob(P_GATE_RELEASE, 80, 620, 24, "RELEASE", sc(kScaleRelease), true);
-  pill(P_GATE_FAST, 150, 610, 58, 22, "F.ATK");
-  button(P_GATE_MODE, 140, 640, 48, 22, 1.0, "GATE");
-  button(P_GATE_MODE, 192, 640, 48, 22, 0.0, "EXP");
-  pill(P_GATE_IN, 80, 670, 56, 22, "GATE IN");
+  knob(P_GATE_RANGE, 130, 550, 22, "RANGE", sc(kScaleRange), true);
+  knob(P_GATE_RELEASE, 200, 550, 22, "RELEASE", sc(kScaleRelease), true);
+  pill(P_GATE_FAST, 40, 620, 58, 22, "F.ATK");
+  button(P_GATE_MODE, 110, 620, 56, 22, 1.0, "GATE");
+  button(P_GATE_MODE, 172, 620, 56, 22, 0.0, "EXP");
+  pill(P_GATE_IN, 80, 660, 56, 22, "GATE IN");
 
   // Filters.
   knob(P_HPF, 80, 776, 26, "HPF", sc(kScaleHPF), true);
@@ -648,6 +648,8 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   const Skin skin = skinFor(currentColour(shared));
   const int compType =
       std::clamp(static_cast<int>(shared.get(P_COMP_TYPE) + 0.5), 0, 1);
+  const int gateMode =
+      std::clamp(static_cast<int>(shared.get(P_GATE_MODE) + 0.5), 0, 1);
   const bool blackEq =
       std::clamp(static_cast<int>(shared.get(P_EQ_TYPE) + 0.5), 0, 1) == 1;
 
@@ -747,15 +749,29 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
        skin.legendDim.b);
 
   // Dynamics sub-headers. The compressor labels sit on silver when the
-  // 76Blue panel is active.
+  // 76Blue panel is active; both subheaders use the same title + rule.
   const Rgb compLegend =
       compType == 1 ? Rgb{0.12, 0.13, 0.14} : skin.legendDim;
-  text(cr, "COMP", 34, 322, 10.0, 0, compLegend.r, compLegend.g,
-       compLegend.b);
-  text(cr, compType == 0 ? "3.5:1" : "4:1", 236, 322, 10.0, 2,
-       compLegend.r, compLegend.g, compLegend.b);
-  text(cr, "GATE / EXPANDER", 34, 490, 10.0, 0, skin.legendDim.r,
-       skin.legendDim.g, skin.legendDim.b);
+  auto subHeader = [&](double y, const char* title, const char* right,
+                       bool silver) {
+    const Rgb ink = silver ? compLegend : skin.legendDim;
+    text(cr, title, 34, y, 10.0, 0, ink.r, ink.g, ink.b);
+    if (right && *right) {
+      text(cr, right, 236, y, 10.0, 2, ink.r, ink.g, ink.b);
+    }
+    if (silver) {
+      cairo_set_source_rgba(cr, 0.10, 0.11, 0.12, 0.35);
+    } else {
+      cairo_set_source_rgba(cr, 1, 1, 1, 0.10);
+    }
+    cairo_set_line_width(cr, 1.0);
+    cairo_move_to(cr, 34, y + 8);
+    cairo_line_to(cr, 236, y + 8);
+    cairo_stroke(cr);
+  };
+  subHeader(322, "COMP", compType == 0 ? "3.5:1" : "4:1", compType == 1);
+  subHeader(498, "GATE / EXPANDER", gateMode == 1 ? "GATE" : "EXPANDER",
+            false);
 
   // EQ band accents and labels.
   const char* bandNames[4] = {"HF", "HMF", "LMF", "LF"};

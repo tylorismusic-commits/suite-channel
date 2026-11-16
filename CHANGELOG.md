@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.3 — 2026-11-16
+
+- Gate subheader now matches the compressor subheader: title, underline rule
+  and mode label (GATE / EXPANDER).
+- Gate header moved down clear of the compressor block, including the silver
+  76Blue panel.
+- Gate controls rearranged into a single threshold/range/release row, removing
+  the label collision at the bottom of the dynamics section.
+
 ## 0.1.2 — 2026-11-16
 
 - Corrected the input meter tap: it now measures **after the input trim** and
