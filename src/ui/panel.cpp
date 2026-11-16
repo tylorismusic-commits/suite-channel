@@ -337,6 +337,7 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   // Input / colour.
   knob(P_INPUT, 70, 180, 26, "INPUT", sc(kScaleInput), true);
   knob(P_COLOR_AMOUNT, 160, 180, 22, "COLOUR", sc(kScaleAmount), true);
+  pill(P_POLARITY, 150, 132, 58, 20, "\u00d8");
 
   // Dynamics.
   toggle(P_COMP_TYPE, 170, 286, 1.0, "76", "VCA");

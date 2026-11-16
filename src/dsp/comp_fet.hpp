@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // 76Blue FET compressor, adapted from Comp Suite's FetLimiter Blue variant.
-// The strip's Threshold knob drives the FET input, the ratio is fixed at 4:1,
-// and the F.ATK switch selects the slow or fast attack step.
+// The strip's Threshold is a real threshold and the FET input is held at
+// unity, so the same control surface works as the VCA. The ratio is fixed at
+// 4:1 and the F.ATK switch selects the slow or fast attack step.
 #pragma once
 
 #include <algorithm>
@@ -46,13 +47,14 @@ public:
   void setControls(const Controls& c) noexcept {
     controls_ = c;
 
-    // The strip's Threshold is a real threshold; the FET model's native input
-    // attenuator is what actually drives its fixed -28 dB threshold.  This
-    // mapping spans +10..-20 dB without muting at the bottom.
-    const float input = 0.75f - 0.44f * clamp01(c.compThreshold);
-    const float inputDb = -80.0f + 103.0f * std::sqrt(input);
-    inputSmooth_.setTarget(hdsp::dbToGain(inputDb));
-    driveSmooth_.setTarget(baseDrive_ + inputDriveScale_ * input);
+    // Keep the FET input at unity and use the strip's Threshold as a real
+    // threshold.  The 1176 has no threshold control, but a channel strip does;
+    // this keeps the same control surface as the VCA while retaining the FET
+    // gain cell, attack character and program-dependent colour.
+    constexpr float kUnityInput = 0.603f;  // 0 dB through the -80..+23 dB law
+    inputSmooth_.setTarget(1.0f);
+    driveSmooth_.setTarget(baseDrive_ + inputDriveScale_ * kUnityInput);
+    thresholdDb_ = compThresholdDb(c.compThreshold);
 
     ratio_ = 4.0f;
     allButtons_ = false;
@@ -85,10 +87,9 @@ public:
     const float peak = std::max(std::fabs(inL), std::fabs(inR));
     const float levelDb = hdsp::gainToDb(peak);
 
-    constexpr float kThresholdDb = -28.0f;
     constexpr float kKneeDb = 1.0f;
     const float over = hdsp::gainReductionDbSlope(
-        levelDb, kThresholdDb, 1.0f, kKneeDb, 1.0e9f);
+        levelDb, thresholdDb_, 1.0f, kKneeDb, 1.0e9f);
 
     if (over > overDb_) {
       overDb_ += (over - overDb_) * (1.0f - attackCoeff_);
@@ -137,6 +138,7 @@ private:
   float baseDrive_ = 1.30f;
   float inputDriveScale_ = 1.60f;
   float ratio_ = 4.0f;
+  float thresholdDb_ = -28.0f;
   bool allButtons_ = false;
   float attackMs_ = 0.9f;
   float releaseMs_ = 370.0f;

@@ -62,8 +62,8 @@ These are the 4K EQ 2 calibrated filters.
 - **Type**: VCA or 76Blue.
 - **VCA**: fixed **3.5:1**, threshold +10…−20 dB, 30 ms attack / 3 ms F.ATK,
   300 ms release, ±9 dB makeup.
-- **76Blue**: fixed **4:1**, same control surface, calibrated FET input drive,
-  ~0.9 ms / 40 µs F.ATK, ~370 ms release.
+- **76Blue**: fixed **4:1**, same control surface, real threshold through the
+  FET gain cell, ~0.9 ms / 40 µs F.ATK, ~370 ms release.
 - **AUTO**: slow average gain-reduction makeup.
 - **F.ATK**: selects the fast attack.
 - **COMP**: compressor in/out.
