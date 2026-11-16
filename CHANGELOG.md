@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.1 — 2026-11-16
+
+- Fixed typed-value entry: the field stays anchored where it opened instead of
+  following the pointer, clicking inside it keeps editing, and the plugin
+  window takes X keyboard focus on click so typed characters reach the field.
+- **PASTE** button added beside COPY: COPY captures the live settings and
+  PASTE applies them. COPY no longer mirrors A into B by itself.
+- Gate button rows (F.ATK / GATE / EXP / DUCK and GATE IN / HOLD) are centred
+  in the left column.
+- Gate subheader now reports **DUCKER** when Ducker mode is selected; it was
+  previously clamped to Gate. The section title follows the mode.
+- Gate Range/Release printed scales trimmed to three labels so "30" and "0.3"
+  no longer render as "300.3".
+- The editor and CLAP parameter strings now share one value formatter/parser,
+  so every option reports the same labels in both places.
+
 ## 0.2.0 — 2026-11-16
 
 - Gate **HOLD**: 0 / 50 / 100 / 200 / 400 / 500 ms, shown as a compact pill

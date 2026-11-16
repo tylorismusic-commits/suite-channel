@@ -293,6 +293,12 @@ private:
     const double s = scale();
     switch (ev.type) {
       case ButtonPress: {
+        // X only delivers KeyPress to the focused window. Hosts do not always
+        // focus plugin windows on a right-click, so take focus here.
+        if (display_ && window_) {
+          XSetInputFocus(display_, window_, RevertToParent, CurrentTime);
+          XFlush(display_);
+        }
         const bool fine = (ev.xbutton.state & ShiftMask) != 0;
         const double x = ev.xbutton.x / s;
         const double y = ev.xbutton.y / s;
@@ -435,122 +441,16 @@ bool paramsValue(const clap_plugin_t* p, clap_id id, double* value) {
   return true;
 }
 
-namespace {
-
-void formatHz(char* out, uint32_t size, double hz) {
-  if (hz >= 1000.0) {
-    std::snprintf(out, size, "%.2f kHz", hz / 1000.0);
-  } else {
-    std::snprintf(out, size, "%.0f Hz", hz);
-  }
-}
-
-void formatDb(char* out, uint32_t size, double db) {
-  std::snprintf(out, size, "%+.1f dB", db);
-}
-
-} // namespace
-
-// Hosts show these strings in their generic parameter lists.
+// Hosts show these strings in their generic parameter lists. The editor uses
+// the same formatter, so both always report the same option names.
 bool paramsValueToText(const clap_plugin_t*, clap_id id, double value,
                        char* out, uint32_t size) {
   if (id >= P_COUNT) {
     return false;
   }
-  const ParamSpec& s = kParamSpecs[id];
-  if (s.labels.count > 0) {
-    const int index = std::clamp(static_cast<int>(value + 0.5), 0,
-                                 s.labels.count - 1);
-    std::snprintf(out, size, "%s", s.labels.names[index]);
-    return true;
-  }
-
-  switch (id) {
-    case P_ENABLED:
-    case P_POLARITY:
-    case P_EQ_IN:
-    case P_LF_BELL:
-    case P_HF_BELL:
-    case P_COMP_IN:
-    case P_COMP_FAST:
-    case P_COMP_AUTO:
-    case P_GATE_IN:
-    case P_GATE_FAST:
-    case P_DYN_POST:
-    case P_LIMITER_ON:
-      std::snprintf(out, size, "%s", value > 0.5 ? "On" : "Off");
-      return true;
-    case P_INPUT:
-      formatDb(out, size, inputGainDb(static_cast<float>(value)));
-      return true;
-    case P_OUTPUT:
-      if (value <= 0.0005) {
-        std::snprintf(out, size, "Off");
-      } else {
-        formatDb(out, size, outputGainDb(static_cast<float>(value)));
-      }
-      return true;
-    case P_COMP_THRESHOLD:
-      formatDb(out, size, compThresholdDb(static_cast<float>(value)));
-      return true;
-    case P_COMP_MAKEUP:
-      formatDb(out, size, compMakeupDb(static_cast<float>(value)));
-      return true;
-    case P_HPF:
-      if (value <= 0.001) {
-        std::snprintf(out, size, "Out");
-      } else {
-        formatHz(out, size, hpfHz(static_cast<float>(value)));
-      }
-      return true;
-    case P_LPF:
-      if (value <= 0.001) {
-        std::snprintf(out, size, "Out");
-      } else {
-        formatHz(out, size, lpfHz(static_cast<float>(value)));
-      }
-      return true;
-    case P_LF_GAIN:
-    case P_LM_GAIN:
-    case P_HM_GAIN:
-    case P_HF_GAIN:
-      formatDb(out, size, bandGainDb(static_cast<float>(value)));
-      return true;
-    case P_LF_FREQ:
-      formatHz(out, size, lfHz(static_cast<float>(value)));
-      return true;
-    case P_LM_FREQ:
-      formatHz(out, size, lmHz(static_cast<float>(value)));
-      return true;
-    case P_HM_FREQ:
-      formatHz(out, size, hmHz(static_cast<float>(value)));
-      return true;
-    case P_HF_FREQ:
-      formatHz(out, size, hfHz(static_cast<float>(value)));
-      return true;
-    case P_LM_Q:
-    case P_HM_Q:
-      std::snprintf(out, size, "%.2f", bandQ(static_cast<float>(value)));
-      return true;
-    case P_GATE_THRESHOLD:
-      formatDb(out, size, gateThresholdDb(static_cast<float>(value)));
-      return true;
-    case P_GATE_RANGE:
-      std::snprintf(out, size, "%.1f dB", gateRangeDb(static_cast<float>(value)));
-      return true;
-    case P_GATE_RELEASE:
-      std::snprintf(out, size, "%.2f s", gateReleaseMs(static_cast<float>(value)) / 1000.0);
-      return true;
-    case P_GATE_HOLD:
-      std::snprintf(out, size, "%.0f ms", gateHoldMs(static_cast<float>(value)));
-      return true;
-    case P_COLOR_AMOUNT:
-      std::snprintf(out, size, "%.1f", value * 10.0);
-      return true;
-    default:
-      std::snprintf(out, size, "%.2f", value);
-      return true;
-  }
+  const std::string text = formatParamValue(id, value);
+  std::snprintf(out, size, "%s", text.c_str());
+  return true;
 }
 
 bool paramsTextToValue(const clap_plugin_t*, clap_id id, const char* text,
@@ -558,32 +458,7 @@ bool paramsTextToValue(const clap_plugin_t*, clap_id id, const char* text,
   if (!text || id >= P_COUNT) {
     return false;
   }
-  const ParamSpec& s = kParamSpecs[id];
-  for (int i = 0; i < s.labels.count; ++i) {
-    if (strcasecmp(text, s.labels.names[i]) == 0) {
-      *value = static_cast<double>(i);
-      return true;
-    }
-  }
-  if (strcasecmp(text, "on") == 0 || strcasecmp(text, "yes") == 0) {
-    *value = 1.0;
-    return true;
-  }
-  if (strcasecmp(text, "off") == 0 || strcasecmp(text, "no") == 0) {
-    *value = 0.0;
-    return true;
-  }
-  if (strcasecmp(text, "out") == 0) {
-    *value = 0.0;
-    return true;
-  }
-  char* end = nullptr;
-  const double v = std::strtod(text, &end);
-  if (end == text) {
-    return false;
-  }
-  *value = v;
-  return true;
+  return parseParamValue(id, text, value);
 }
 
 void applyEvents(Plugin* s, const clap_input_events_t* in) {

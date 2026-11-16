@@ -120,6 +120,12 @@ struct Ui {
         }
         break;
       case ButtonPress: {
+        // X only delivers KeyPress to the focused window. Take focus so the
+        // typed-value field receives keys after a right-click.
+        if (dpy && win) {
+          XSetInputFocus(dpy, win, RevertToParent, CurrentTime);
+          XFlush(dpy);
+        }
         const bool fine = (ev.xbutton.state & ShiftMask) != 0;
         if (ev.xbutton.button == Button4) {
           panel.wheel(shared, state, toLogicalX(ev.xbutton.x),

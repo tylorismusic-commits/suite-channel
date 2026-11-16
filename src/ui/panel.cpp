@@ -124,8 +124,8 @@ const char* const kScaleQ[] = {"0.5", "1", "2", "3"};
 const char* const kScaleCompThresh[] = {"+10", "0", "-10", "-20"};
 const char* const kScaleMakeup[] = {"-9", "0", "+9"};
 const char* const kScaleGateThresh[] = {"-30", "-15", "0", "+10"};
-const char* const kScaleRange[] = {"0", "10", "20", "30", "40"};
-const char* const kScaleRelease[] = {"0.1", "0.3", "1", "2", "4"};
+const char* const kScaleRange[] = {"0", "20", "40"};
+const char* const kScaleRelease[] = {"0.1", "1", "4"};
 
 template <size_t N>
 std::vector<const char*> sc(const char* const (&labels)[N]) {
@@ -189,255 +189,6 @@ const std::vector<int>& presetOrder() {
 
 int currentColour(const Shared& shared) {
   return std::clamp(static_cast<int>(shared.get(P_COLOR_MODEL) + 0.5), 0, 4);
-}
-
-std::string lowerText(std::string s) {
-  for (char& c : s) {
-    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-  }
-  return s;
-}
-
-std::string trimText(const std::string& s) {
-  const size_t a = s.find_first_not_of(" \t");
-  if (a == std::string::npos) {
-    return {};
-  }
-  const size_t b = s.find_last_not_of(" \t");
-  return s.substr(a, b - a + 1);
-}
-
-std::string formatHz(double hz) {
-  char buf[48];
-  if (hz >= 1000.0) {
-    std::snprintf(buf, sizeof(buf), "%.2f kHz", hz / 1000.0);
-  } else {
-    std::snprintf(buf, sizeof(buf), "%.0f Hz", hz);
-  }
-  return buf;
-}
-
-std::string formatDb(double db) {
-  char buf[48];
-  std::snprintf(buf, sizeof(buf), "%+.1f dB", db);
-  return buf;
-}
-
-std::string formatMs(double ms) {
-  char buf[48];
-  if (ms >= 1000.0) {
-    std::snprintf(buf, sizeof(buf), "%.2f s", ms / 1000.0);
-  } else {
-    std::snprintf(buf, sizeof(buf), "%.0f ms", ms);
-  }
-  return buf;
-}
-
-std::string formatParamValue(uint32_t p, double v) {
-  const ParamSpec& s = kParamSpecs[p];
-  if (s.labels.count > 0) {
-    const int i = std::clamp(static_cast<int>(v + 0.5), 0, s.labels.count - 1);
-    return s.labels.names[i];
-  }
-  char buf[64];
-  switch (p) {
-    case P_ENABLED:
-    case P_POLARITY:
-    case P_EQ_IN:
-    case P_LF_BELL:
-    case P_HF_BELL:
-    case P_COMP_IN:
-    case P_COMP_FAST:
-    case P_COMP_AUTO:
-    case P_GATE_IN:
-    case P_GATE_FAST:
-    case P_DYN_POST:
-    case P_LIMITER_ON:
-      return v > 0.5 ? "On" : "Off";
-    case P_INPUT:
-      return formatDb(inputGainDb(static_cast<float>(v)));
-    case P_OUTPUT:
-      return v <= 0.0005
-                 ? "OFF"
-                 : formatDb(outputGainDb(static_cast<float>(v)));
-    case P_COMP_THRESHOLD:
-      return formatDb(compThresholdDb(static_cast<float>(v)));
-    case P_COMP_MAKEUP:
-      return formatDb(compMakeupDb(static_cast<float>(v)));
-    case P_HPF:
-      return v <= 0.001 ? "OUT" : formatHz(hpfHz(static_cast<float>(v)));
-    case P_LPF:
-      return v <= 0.001 ? "OUT" : formatHz(lpfHz(static_cast<float>(v)));
-    case P_LF_GAIN:
-    case P_LM_GAIN:
-    case P_HM_GAIN:
-    case P_HF_GAIN:
-      return formatDb(bandGainDb(static_cast<float>(v)));
-    case P_LF_FREQ:
-      return formatHz(lfHz(static_cast<float>(v)));
-    case P_LM_FREQ:
-      return formatHz(lmHz(static_cast<float>(v)));
-    case P_HM_FREQ:
-      return formatHz(hmHz(static_cast<float>(v)));
-    case P_HF_FREQ:
-      return formatHz(hfHz(static_cast<float>(v)));
-    case P_LM_Q:
-    case P_HM_Q:
-      std::snprintf(buf, sizeof(buf), "%.2f", bandQ(static_cast<float>(v)));
-      return buf;
-    case P_GATE_THRESHOLD:
-      return formatDb(gateThresholdDb(static_cast<float>(v)));
-    case P_GATE_RANGE:
-      std::snprintf(buf, sizeof(buf), "%.0f dB",
-                    gateRangeDb(static_cast<float>(v)));
-      return buf;
-    case P_GATE_RELEASE:
-      return formatMs(gateReleaseMs(static_cast<float>(v)));
-    case P_GATE_HOLD:
-      return formatMs(gateHoldMs(static_cast<float>(v)));
-    case P_COLOR_AMOUNT:
-      std::snprintf(buf, sizeof(buf), "%.1f", v * 10.0);
-      return buf;
-    default:
-      std::snprintf(buf, sizeof(buf), "%.2f", v);
-      return buf;
-  }
-}
-
-bool parseParamValue(uint32_t p, const std::string& raw, double* out) {
-  const ParamSpec& s = kParamSpecs[p];
-  const std::string text = lowerText(trimText(raw));
-  if (text.empty()) {
-    return false;
-  }
-  for (int i = 0; i < s.labels.count; ++i) {
-    if (text == lowerText(s.labels.names[i])) {
-      *out = i;
-      return true;
-    }
-  }
-  if (text == "on" || text == "true" || text == "yes") {
-    *out = 1.0;
-    return true;
-  }
-  if (text == "off" || text == "false" || text == "no") {
-    *out = 0.0;
-    return true;
-  }
-  if (text == "out") {
-    *out = 0.0;
-    return true;
-  }
-
-  char* end = nullptr;
-  const double value = std::strtod(text.c_str(), &end);
-  if (end == text.c_str()) {
-    return false;
-  }
-  const std::string suffix = trimText(std::string(end));
-
-  auto freq = [&]() {
-    double hz = value;
-    if (suffix == "khz" || suffix == "k") {
-      hz *= 1000.0;
-    }
-    return hz;
-  };
-  auto ms = [&]() {
-    double t = value;
-    if (suffix == "s" || suffix == "sec") {
-      t *= 1000.0;
-    }
-    return t;
-  };
-
-  switch (p) {
-    case P_INPUT:
-      *out = (value + 18.0) / 36.0;
-      return true;
-    case P_OUTPUT: {
-      if (value >= 0.0) {
-        *out = 0.75 + value / 48.0;
-      } else {
-        *out = 0.75 * std::pow(10.0, value / 60.0);
-      }
-      return true;
-    }
-    case P_COMP_THRESHOLD:
-      *out = (10.0 - value) / 30.0;
-      return true;
-    case P_COMP_MAKEUP:
-      *out = (value + 9.0) / 18.0;
-      return true;
-    case P_HPF: {
-      const double hz = freq();
-      *out = hz <= 16.0 ? 0.0
-                        : std::log(hz / 16.0) / std::log(350.0 / 16.0);
-      return true;
-    }
-    case P_LPF: {
-      const double hz = freq();
-      *out = hz <= 0.0
-                 ? 0.0
-                 : std::log(std::clamp(hz, 3000.0, 15200.0) / 3000.0) /
-                       std::log(15200.0 / 3000.0);
-      return true;
-    }
-    case P_LF_GAIN:
-    case P_LM_GAIN:
-    case P_HM_GAIN:
-    case P_HF_GAIN:
-      *out = (value + 15.0) / 30.0;
-      return true;
-    case P_LF_FREQ: {
-      const double hz = freq();
-      *out = std::log(std::clamp(hz, 30.0, 450.0) / 30.0) /
-             std::log(450.0 / 30.0);
-      return true;
-    }
-    case P_LM_FREQ: {
-      const double hz = freq();
-      *out = std::log(std::clamp(hz, 200.0, 2500.0) / 200.0) /
-             std::log(2500.0 / 200.0);
-      return true;
-    }
-    case P_HM_FREQ: {
-      const double hz = freq();
-      *out = std::log(std::clamp(hz, 600.0, 7000.0) / 600.0) /
-             std::log(7000.0 / 600.0);
-      return true;
-    }
-    case P_HF_FREQ: {
-      const double hz = freq();
-      *out = std::log(std::clamp(hz, 1500.0, 16000.0) / 1500.0) /
-             std::log(16000.0 / 1500.0);
-      return true;
-    }
-    case P_LM_Q:
-    case P_HM_Q:
-      *out = std::log(std::clamp(value, 0.5, 3.0) / 0.5) /
-             std::log(3.0 / 0.5);
-      return true;
-    case P_GATE_THRESHOLD:
-      *out = (value + 30.0) / 40.0;
-      return true;
-    case P_GATE_RANGE:
-      *out = value / 40.0;
-      return true;
-    case P_GATE_RELEASE:
-      *out = std::log(std::clamp(ms(), 100.0, 4000.0) / 100.0) /
-             std::log(40.0);
-      return true;
-    case P_GATE_HOLD:
-      *out = ms() / 500.0;
-      return true;
-    case P_COLOR_AMOUNT:
-      *out = value / 10.0;
-      return true;
-    default:
-      *out = value;
-      return true;
-  }
 }
 
 } // namespace
@@ -591,9 +342,9 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     Widget os;
     os.kind = Kind::Cycle;
     os.param = P_OVERSAMPLE;
-    os.x = 580;
+    os.x = 584;
     os.y = 18;
-    os.w = 100;
+    os.w = 96;
     os.h = 26;
     widgets_.push_back(os);
   }
@@ -601,9 +352,9 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     Widget a;
     a.kind = Kind::AB;
     a.value = 0.0;
-    a.x = 332;
+    a.x = 331;
     a.y = 18;
-    a.w = 32;
+    a.w = 28;
     a.h = 26;
     a.label = "A";
     widgets_.push_back(a);
@@ -612,9 +363,9 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     Widget b;
     b.kind = Kind::AB;
     b.value = 1.0;
-    b.x = 368;
+    b.x = 361;
     b.y = 18;
-    b.w = 32;
+    b.w = 28;
     b.h = 26;
     b.label = "B";
     widgets_.push_back(b);
@@ -622,12 +373,22 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   {
     Widget c;
     c.kind = Kind::Copy;
-    c.x = 404;
+    c.x = 391;
     c.y = 18;
     c.w = 40;
     c.h = 26;
     c.label = "COPY";
     widgets_.push_back(c);
+  }
+  {
+    Widget q;
+    q.kind = Kind::Paste;
+    q.x = 433;
+    q.y = 18;
+    q.w = 44;
+    q.h = 26;
+    q.label = "PASTE";
+    widgets_.push_back(q);
   }
 
   // Colour tabs.
@@ -676,16 +437,16 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
        sc(kScaleGateThresh), true);
   knob(P_GATE_RANGE, 130, 550, 22, "RANGE", sc(kScaleRange), true);
   knob(P_GATE_RELEASE, 200, 550, 22, "RELEASE", sc(kScaleRelease), true);
-  pill(P_GATE_FAST, 40, 620, 58, 22, "F.ATK");
-  button(P_GATE_MODE, 104, 620, 44, 22, 1.0, "GATE");
-  button(P_GATE_MODE, 152, 620, 44, 22, 0.0, "EXP");
-  button(P_GATE_MODE, 200, 620, 44, 22, 2.0, "DUCK");
-  pill(P_GATE_IN, 80, 660, 56, 22, "GATE IN");
+  pill(P_GATE_FAST, 32, 620, 58, 22, "F.ATK");
+  button(P_GATE_MODE, 96, 620, 44, 22, 1.0, "GATE");
+  button(P_GATE_MODE, 144, 620, 44, 22, 0.0, "EXP");
+  button(P_GATE_MODE, 192, 620, 44, 22, 2.0, "DUCK");
+  pill(P_GATE_IN, 59, 660, 56, 22, "GATE IN");
   {
     Widget h;
     h.kind = Kind::Hold;
     h.param = P_GATE_HOLD;
-    h.x = 150;
+    h.x = 123;
     h.y = 660;
     h.w = 86;
     h.h = 22;
@@ -802,7 +563,7 @@ void Panel::drawHeader(cairo_t* cr, const Shared& shared,
   cairo_line_to(cr, kPanelWidth, 107.5);
   cairo_stroke(cr);
 
-  text(cr, "SUITE CHANNEL", 505, 38, 13.5, 1, 0.82, 0.85, 0.88);
+  text(cr, "SUITE CHANNEL", 530, 38, 12.0, 1, 0.82, 0.85, 0.88);
   drawPresetBar(cr, shared, state);
 }
 
@@ -941,25 +702,18 @@ void Panel::applyAB(Shared& shared, PanelState& state, int target) const {
 }
 
 void Panel::copyAB(Shared& shared, PanelState& state) const {
-  if (!state.aValid) {
-    for (uint32_t p = 0; p < P_COUNT; ++p) {
-      state.aValues[p] = shared.get(p);
-    }
-    state.aValid = true;
-    state.activeAB = 0;
+  for (uint32_t p = 0; p < P_COUNT; ++p) {
+    state.clipboardValues[p] = shared.get(p);
   }
-  if (state.activeAB == 0) {
-    for (uint32_t p = 0; p < P_COUNT; ++p) {
-      state.aValues[p] = shared.get(p);
-      state.bValues[p] = state.aValues[p];
-    }
-    state.bValid = true;
-  } else {
-    for (uint32_t p = 0; p < P_COUNT; ++p) {
-      state.bValues[p] = shared.get(p);
-      state.aValues[p] = state.bValues[p];
-    }
-    state.aValid = true;
+  state.clipboardValid = true;
+}
+
+void Panel::pasteClipboard(Shared& shared, PanelState& state) const {
+  if (!state.clipboardValid) {
+    return;
+  }
+  for (uint32_t p = 0; p < P_COUNT; ++p) {
+    shared.set(p, state.clipboardValues[p]);
   }
   state.presetDirty = true;
 }
@@ -981,8 +735,20 @@ void Panel::beginTextEntry(Shared& shared, PanelState& state, double x,
     editing_ = true;
     editParam_ = w.param;
     editText_.clear();
+    // Anchor the field next to the control once; it must not follow the
+    // pointer afterwards or it becomes impossible to click into.
+    editBoxX_ = std::clamp(x + 16.0, 4.0, kPanelWidth - kEditW - 4.0);
+    editBoxY_ = y - kEditH - 14.0;
+    if (editBoxY_ < 4.0) {
+      editBoxY_ = std::min(y + 20.0, kPanelHeight - kEditH - 4.0);
+    }
     return;
   }
+}
+
+bool Panel::hitTextEntry(double x, double y) const {
+  return editing_ && x >= editBoxX_ && x <= editBoxX_ + kEditW &&
+         y >= editBoxY_ && y <= editBoxY_ + kEditH;
 }
 
 bool Panel::textKey(Shared& shared, PanelState& state, int key, char ch) {
@@ -1057,25 +823,19 @@ void Panel::drawTextEntry(cairo_t* cr, const Shared& shared) const {
   const std::string current =
       formatParamValue(editParam_, shared.get(editParam_));
   const std::string shown =
-      editText_.empty() ? current : (editText_ + "|");
-  constexpr double w = 124.0;
-  constexpr double h = 26.0;
-  const double x =
-      std::clamp(mouseX_ + 14.0, 4.0, kPanelWidth - w - 4.0);
-  const double y =
-      std::clamp(mouseY_ - 42.0, 4.0, kPanelHeight - h - 4.0);
+      (editText_.empty() ? current : editText_) + "|";
 
-  roundRect(cr, x, y, w, h, 4);
+  roundRect(cr, editBoxX_, editBoxY_, kEditW, kEditH, 4);
   cairo_set_source_rgba(cr, 0.035, 0.04, 0.05, 0.98);
   cairo_fill(cr);
   cairo_set_source_rgba(cr, skin.tabOn.r, skin.tabOn.g, skin.tabOn.b, 0.9);
   cairo_set_line_width(cr, 1.2);
-  roundRect(cr, x + 0.5, y + 0.5, w - 1, h - 1, 4);
+  roundRect(cr, editBoxX_ + 0.5, editBoxY_ + 0.5, kEditW - 1, kEditH - 1, 4);
   cairo_stroke(cr);
 
-  text(cr, spec.name, x + 7, y + 9.5, 7.5, 0, skin.legendDim.r,
-       skin.legendDim.g, skin.legendDim.b);
-  text(cr, shown.c_str(), x + 7, y + 21, 9.5, 0,
+  text(cr, spec.name, editBoxX_ + 8, editBoxY_ + 11, 8.0, 0,
+       skin.legendDim.r, skin.legendDim.g, skin.legendDim.b);
+  text(cr, shown.c_str(), editBoxX_ + 8, editBoxY_ + 24, 10.5, 0,
        editText_.empty() ? skin.legendDim.r : skin.legend.r,
        editText_.empty() ? skin.legendDim.g : skin.legend.g,
        editText_.empty() ? skin.legendDim.b : skin.legend.b);
@@ -1136,7 +896,7 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   const int compType =
       std::clamp(static_cast<int>(shared.get(P_COMP_TYPE) + 0.5), 0, 1);
   const int gateMode =
-      std::clamp(static_cast<int>(shared.get(P_GATE_MODE) + 0.5), 0, 1);
+      std::clamp(static_cast<int>(shared.get(P_GATE_MODE) + 0.5), 0, 2);
   const bool blackEq =
       std::clamp(static_cast<int>(shared.get(P_EQ_TYPE) + 0.5), 0, 1) == 1;
 
@@ -1257,7 +1017,7 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
     cairo_stroke(cr);
   };
   subHeader(322, "COMP", compType == 0 ? "3.5:1" : "4:1", compType == 1);
-  subHeader(498, "GATE / EXPANDER",
+  subHeader(498, gateMode == 2 ? "GATE / DUCKER" : "GATE / EXPANDER",
             gateMode == 0 ? "EXPANDER"
                           : (gateMode == 1 ? "GATE" : "DUCKER"),
             false);
@@ -1411,6 +1171,9 @@ void Panel::drawWidget(cairo_t* cr, const Widget& w, const Shared& shared,
       break;
     case Kind::Copy:
       drawButton(cr, w, false);
+      break;
+    case Kind::Paste:
+      drawButton(cr, w, state.clipboardValid);
       break;
     case Kind::Hold: {
       std::string label =
@@ -1764,6 +1527,10 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
   mouseX_ = x;
   mouseY_ = y;
   if (editing_) {
+    if (hitTextEntry(x, y)) {
+      return true;  // Clicking the field keeps the edit alive.
+    }
+    commitTextEntry(shared, state);
     editing_ = false;
     editText_.clear();
   }
@@ -1852,6 +1619,9 @@ bool Panel::pointerDown(Shared& shared, PanelState& state, double x, double y,
         return true;
       case Kind::Copy:
         copyAB(shared, state);
+        return true;
+      case Kind::Paste:
+        pasteClipboard(shared, state);
         return true;
       case Kind::Hold: {
         static const double steps[] = {0.0, 0.1, 0.2, 0.4, 0.8, 1.0};

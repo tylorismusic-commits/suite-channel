@@ -4,8 +4,12 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
 
 #include "dsp/controls.hpp"
 
@@ -267,6 +271,258 @@ inline Controls controlsFrom(const Shared& s) noexcept {
   c.oversample = static_cast<float>(s.get(P_OVERSAMPLE));
   c.limiterOn = s.get(P_LIMITER_ON) > 0.5;
   return c;
+}
+
+// Human-readable value used by the editor bubbles and the CLAP parameter
+// strings. Every parameter goes through this one function so the panel and the
+// host always report the same option names.
+inline std::string lowerText(std::string s) {
+  for (char& c : s) {
+    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  }
+  return s;
+}
+
+inline std::string trimText(const std::string& s) {
+  const size_t a = s.find_first_not_of(" \t");
+  if (a == std::string::npos) {
+    return {};
+  }
+  const size_t b = s.find_last_not_of(" \t");
+  return s.substr(a, b - a + 1);
+}
+
+inline std::string formatHz(double hz) {
+  char buf[48];
+  if (hz >= 1000.0) {
+    std::snprintf(buf, sizeof(buf), "%.2f kHz", hz / 1000.0);
+  } else {
+    std::snprintf(buf, sizeof(buf), "%.0f Hz", hz);
+  }
+  return buf;
+}
+
+inline std::string formatDb(double db) {
+  char buf[48];
+  std::snprintf(buf, sizeof(buf), "%+.1f dB", db);
+  return buf;
+}
+
+inline std::string formatMs(double ms) {
+  char buf[48];
+  if (ms >= 1000.0) {
+    std::snprintf(buf, sizeof(buf), "%.2f s", ms / 1000.0);
+  } else {
+    std::snprintf(buf, sizeof(buf), "%.0f ms", ms);
+  }
+  return buf;
+}
+
+inline std::string formatParamValue(uint32_t p, double v) {
+  const ParamSpec& s = kParamSpecs[p];
+  if (s.labels.count > 0) {
+    const int i = std::clamp(static_cast<int>(v + 0.5), 0, s.labels.count - 1);
+    return s.labels.names[i];
+  }
+  char buf[64];
+  switch (p) {
+    case P_ENABLED:
+    case P_POLARITY:
+    case P_EQ_IN:
+    case P_LF_BELL:
+    case P_HF_BELL:
+    case P_COMP_IN:
+    case P_COMP_FAST:
+    case P_COMP_AUTO:
+    case P_GATE_IN:
+    case P_GATE_FAST:
+    case P_DYN_POST:
+    case P_LIMITER_ON:
+      return v > 0.5 ? "On" : "Off";
+    case P_INPUT:
+      return formatDb(inputGainDb(static_cast<float>(v)));
+    case P_OUTPUT:
+      return v <= 0.0005
+                 ? "OFF"
+                 : formatDb(outputGainDb(static_cast<float>(v)));
+    case P_COMP_THRESHOLD:
+      return formatDb(compThresholdDb(static_cast<float>(v)));
+    case P_COMP_MAKEUP:
+      return formatDb(compMakeupDb(static_cast<float>(v)));
+    case P_HPF:
+      return v <= 0.001 ? "OUT" : formatHz(hpfHz(static_cast<float>(v)));
+    case P_LPF:
+      return v <= 0.001 ? "OUT" : formatHz(lpfHz(static_cast<float>(v)));
+    case P_LF_GAIN:
+    case P_LM_GAIN:
+    case P_HM_GAIN:
+    case P_HF_GAIN:
+      return formatDb(bandGainDb(static_cast<float>(v)));
+    case P_LF_FREQ:
+      return formatHz(lfHz(static_cast<float>(v)));
+    case P_LM_FREQ:
+      return formatHz(lmHz(static_cast<float>(v)));
+    case P_HM_FREQ:
+      return formatHz(hmHz(static_cast<float>(v)));
+    case P_HF_FREQ:
+      return formatHz(hfHz(static_cast<float>(v)));
+    case P_LM_Q:
+    case P_HM_Q:
+      std::snprintf(buf, sizeof(buf), "%.2f", bandQ(static_cast<float>(v)));
+      return buf;
+    case P_GATE_THRESHOLD:
+      return formatDb(gateThresholdDb(static_cast<float>(v)));
+    case P_GATE_RANGE:
+      std::snprintf(buf, sizeof(buf), "%.0f dB",
+                    gateRangeDb(static_cast<float>(v)));
+      return buf;
+    case P_GATE_RELEASE:
+      return formatMs(gateReleaseMs(static_cast<float>(v)));
+    case P_GATE_HOLD:
+      return formatMs(gateHoldMs(static_cast<float>(v)));
+    case P_COLOR_AMOUNT:
+      std::snprintf(buf, sizeof(buf), "%.1f", v * 10.0);
+      return buf;
+    default:
+      std::snprintf(buf, sizeof(buf), "%.2f", v);
+      return buf;
+  }
+}
+
+inline bool parseParamValue(uint32_t p, const std::string& raw, double* out) {
+  const ParamSpec& s = kParamSpecs[p];
+  const std::string text = lowerText(trimText(raw));
+  if (text.empty()) {
+    return false;
+  }
+  for (int i = 0; i < s.labels.count; ++i) {
+    if (text == lowerText(s.labels.names[i])) {
+      *out = i;
+      return true;
+    }
+  }
+  if (text == "on" || text == "true" || text == "yes") {
+    *out = 1.0;
+    return true;
+  }
+  if (text == "off" || text == "false" || text == "no") {
+    *out = 0.0;
+    return true;
+  }
+  if (text == "out") {
+    *out = 0.0;
+    return true;
+  }
+
+  char* end = nullptr;
+  const double value = std::strtod(text.c_str(), &end);
+  if (end == text.c_str()) {
+    return false;
+  }
+  const std::string suffix = trimText(std::string(end));
+
+  auto freq = [&]() {
+    double hz = value;
+    if (suffix == "khz" || suffix == "k") {
+      hz *= 1000.0;
+    }
+    return hz;
+  };
+  auto ms = [&]() {
+    double t = value;
+    if (suffix == "s" || suffix == "sec") {
+      t *= 1000.0;
+    }
+    return t;
+  };
+
+  switch (p) {
+    case P_INPUT:
+      *out = (value + 18.0) / 36.0;
+      return true;
+    case P_OUTPUT: {
+      if (value >= 0.0) {
+        *out = 0.75 + value / 48.0;
+      } else {
+        *out = 0.75 * std::pow(10.0, value / 60.0);
+      }
+      return true;
+    }
+    case P_COMP_THRESHOLD:
+      *out = (10.0 - value) / 30.0;
+      return true;
+    case P_COMP_MAKEUP:
+      *out = (value + 9.0) / 18.0;
+      return true;
+    case P_HPF: {
+      const double hz = freq();
+      *out = hz <= 16.0 ? 0.0
+                        : std::log(hz / 16.0) / std::log(350.0 / 16.0);
+      return true;
+    }
+    case P_LPF: {
+      const double hz = freq();
+      *out = hz <= 0.0
+                 ? 0.0
+                 : std::log(std::clamp(hz, 3000.0, 15200.0) / 3000.0) /
+                       std::log(15200.0 / 3000.0);
+      return true;
+    }
+    case P_LF_GAIN:
+    case P_LM_GAIN:
+    case P_HM_GAIN:
+    case P_HF_GAIN:
+      *out = (value + 15.0) / 30.0;
+      return true;
+    case P_LF_FREQ: {
+      const double hz = freq();
+      *out = std::log(std::clamp(hz, 30.0, 450.0) / 30.0) /
+             std::log(450.0 / 30.0);
+      return true;
+    }
+    case P_LM_FREQ: {
+      const double hz = freq();
+      *out = std::log(std::clamp(hz, 200.0, 2500.0) / 200.0) /
+             std::log(2500.0 / 200.0);
+      return true;
+    }
+    case P_HM_FREQ: {
+      const double hz = freq();
+      *out = std::log(std::clamp(hz, 600.0, 7000.0) / 600.0) /
+             std::log(7000.0 / 600.0);
+      return true;
+    }
+    case P_HF_FREQ: {
+      const double hz = freq();
+      *out = std::log(std::clamp(hz, 1500.0, 16000.0) / 1500.0) /
+             std::log(16000.0 / 1500.0);
+      return true;
+    }
+    case P_LM_Q:
+    case P_HM_Q:
+      *out = std::log(std::clamp(value, 0.5, 3.0) / 0.5) /
+             std::log(3.0 / 0.5);
+      return true;
+    case P_GATE_THRESHOLD:
+      *out = (value + 30.0) / 40.0;
+      return true;
+    case P_GATE_RANGE:
+      *out = value / 40.0;
+      return true;
+    case P_GATE_RELEASE:
+      *out = std::log(std::clamp(ms(), 100.0, 4000.0) / 100.0) /
+             std::log(40.0);
+      return true;
+    case P_GATE_HOLD:
+      *out = ms() / 500.0;
+      return true;
+    case P_COLOR_AMOUNT:
+      *out = value / 10.0;
+      return true;
+    default:
+      *out = value;
+      return true;
+  }
 }
 
 } // namespace suite

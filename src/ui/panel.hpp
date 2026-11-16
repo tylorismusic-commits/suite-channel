@@ -30,12 +30,14 @@ struct PanelState {
   float grDb = 0.0f;
   float gateGrDb = 0.0f;
 
-  // Editor-local A/B compare slots.
+  // Editor-local A/B compare slots and copy/paste clipboard.
   bool aValid = false;
   bool bValid = false;
   int activeAB = 0;
   double aValues[P_COUNT] = {};
   double bValues[P_COUNT] = {};
+  bool clipboardValid = false;
+  double clipboardValues[P_COUNT] = {};
 };
 
 class Panel {
@@ -97,6 +99,7 @@ private:
     Fader,
     AB,
     Copy,
+    Paste,
     Hold,
   };
 
@@ -142,6 +145,8 @@ private:
   void applyAB(Shared& shared, PanelState& state, int target) const;
   void copyAB(Shared& shared, PanelState& state) const;
   bool commitTextEntry(Shared& shared, PanelState& state);
+  bool hitTextEntry(double x, double y) const;
+  void pasteClipboard(Shared& shared, PanelState& state) const;
 
   double knobValue(const Shared& shared, const Widget& w) const;
   bool isLit(const Shared& shared, const Widget& w) const;
@@ -162,6 +167,10 @@ private:
   bool editing_ = false;
   uint32_t editParam_ = 0;
   std::string editText_;
+  double editBoxX_ = 0.0;
+  double editBoxY_ = 0.0;
+  static constexpr double kEditW = 140.0;
+  static constexpr double kEditH = 30.0;
 
   cairo_surface_t* grain_ = nullptr;
   void* ft_ = nullptr;

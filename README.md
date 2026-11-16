@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.2.0** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.2.1** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -116,9 +116,11 @@ These are the 4K EQ 2 calibrated filters.
 - **Double-click** a knob or fader to restore its default.
 - **A / B**: two editor-local compare slots. Switching stores the current
   settings in the slot you leave and recalls the slot you enter.
-- **COPY**: copies the active slot into the other one.
+- **COPY**: captures the live settings. **PASTE** applies them, so you can
+  copy from one slot and paste into the other.
 
-A/B slots live in the editor and are not saved in host state.
+A/B slots and the copy/paste clipboard live in the editor and are not saved in
+host state.
 
 ## Presets
 
@@ -162,8 +164,11 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.2.0 adds gate **Hold** and **Ducker** modes, an output **LIMIT** switch,
-typed value entry, double-click reset, drag value bubbles and A/B/COPY compare.
+0.2.1 adds **PASTE** and fixes the typed-value field (it stays anchored when
+opened and takes keyboard focus), centres the gate button rows and makes every
+parameter report the same option names in the editor and the host.
+0.2.0 added gate **Hold** and **Ducker** modes, an output **LIMIT** switch,
+typed value entry, double-click reset, drag value bubbles and A/B compare.
 0.1.6 put output unity at 3/4 travel, with +12 dB at the top and off at the
 bottom. 0.1.5 gave the output fader a true off position. 0.1.2 corrected the
 input meter to measure after the input trim; 0.1.1 added the stacked stereo

@@ -81,27 +81,30 @@ int main() {
   // A/B compare: A captures the first state, B the second, switching restores.
   {
     shared.set(suite::P_OUTPUT, 0.9);
-    assert(panel.pointerDown(shared, state, 348, 31, false));  // A
+    assert(panel.pointerDown(shared, state, 345, 31, false));  // A
     panel.pointerUp();
-    assert(panel.pointerDown(shared, state, 384, 31, false));  // B
+    assert(panel.pointerDown(shared, state, 375, 31, false));  // B
     panel.pointerUp();
     shared.set(suite::P_OUTPUT, 0.5);
     assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.5) < 1.0e-9);
-    assert(panel.pointerDown(shared, state, 348, 31, false));  // back to A
+    assert(panel.pointerDown(shared, state, 345, 31, false));  // back to A
     panel.pointerUp();
     assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.9) < 1.0e-9);
-    assert(panel.pointerDown(shared, state, 384, 31, false));  // back to B
+    assert(panel.pointerDown(shared, state, 375, 31, false));  // back to B
     panel.pointerUp();
     assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.5) < 1.0e-9);
   }
 
-  // COPY makes both slots identical.
+  // COPY captures the live state; PASTE applies it to the other slot.
   {
-    assert(panel.pointerDown(shared, state, 348, 31, false));  // A
+    assert(panel.pointerDown(shared, state, 345, 31, false));  // A = 0.9
     panel.pointerUp();
-    assert(panel.pointerDown(shared, state, 424, 31, false));  // COPY
+    assert(panel.pointerDown(shared, state, 411, 31, false));  // COPY
     panel.pointerUp();
-    assert(panel.pointerDown(shared, state, 384, 31, false));  // B
+    assert(panel.pointerDown(shared, state, 375, 31, false));  // B = 0.5
+    panel.pointerUp();
+    assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.5) < 1.0e-9);
+    assert(panel.pointerDown(shared, state, 455, 31, false));  // PASTE
     panel.pointerUp();
     assert(std::fabs(shared.get(suite::P_OUTPUT) - 0.9) < 1.0e-9);
   }
@@ -117,11 +120,21 @@ int main() {
     const double expected = (6.0 + 18.0) / 36.0;
     assert(std::fabs(shared.get(suite::P_INPUT) - expected) < 1.0e-6);
 
+    // Clicking inside the field keeps the edit alive, then Enter applies.
+    panel.beginTextEntry(shared, state, 85, 190);
+    assert(panel.pointerDown(shared, state, 110, 158, false));
+    panel.pointerUp();
+    panel.textKey(shared, state, 0, '3');
+    assert(panel.textKey(shared, state, suite::Panel::kTextEnter, 0));
+    assert(std::fabs(shared.get(suite::P_INPUT) - (3.0 + 18.0) / 36.0) <
+           1.0e-6);
+
     // Escape abandons an edit.
     panel.beginTextEntry(shared, state, 85, 190);
     panel.textKey(shared, state, 0, '9');
     assert(panel.textKey(shared, state, suite::Panel::kTextEscape, 0));
-    assert(std::fabs(shared.get(suite::P_INPUT) - expected) < 1.0e-6);
+    assert(std::fabs(shared.get(suite::P_INPUT) - (3.0 + 18.0) / 36.0) <
+           1.0e-6);
   }
 
   // Double-click resets a knob to its default.
@@ -139,7 +152,7 @@ int main() {
     shared.set(suite::P_GATE_HOLD, 0.0);
     const double expected[] = {0.1, 0.2, 0.4, 0.8, 1.0, 0.0};
     for (double v : expected) {
-      assert(panel.pointerDown(shared, state, 193, 671, false));
+      assert(panel.pointerDown(shared, state, 166, 671, false));
       panel.pointerUp();
       assert(std::fabs(shared.get(suite::P_GATE_HOLD) - v) < 1.0e-9);
     }

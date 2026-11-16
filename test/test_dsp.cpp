@@ -51,6 +51,22 @@ int main() {
   assert(std::fabs(suite::outputGainDb(1.0f) - 12.0f) < 0.01f);
   assert(suite::outputGainLinear(0.0f) == 0.0f);
 
+  // Every option name must round-trip between the editor and the host text.
+  {
+    assert(suite::formatParamValue(suite::P_GATE_MODE, 0.0) == "Expander");
+    assert(suite::formatParamValue(suite::P_GATE_MODE, 1.0) == "Gate");
+    assert(suite::formatParamValue(suite::P_GATE_MODE, 2.0) == "Ducker");
+    assert(suite::formatParamValue(suite::P_COMP_TYPE, 1.0) == "76Blue");
+    assert(suite::formatParamValue(suite::P_OVERSAMPLE, 0.0) == "Off");
+    assert(suite::formatParamValue(suite::P_HPF, 0.0) == "OUT");
+    assert(suite::formatParamValue(suite::P_GATE_HOLD, 0.1) == "50 ms");
+    double v = 0.0;
+    assert(suite::parseParamValue(suite::P_GATE_MODE, "Ducker", &v));
+    assert(v == 2.0);
+    assert(suite::parseParamValue(suite::P_GATE_HOLD, "250 ms", &v));
+    assert(std::fabs(v - 0.5) < 1.0e-9);
+  }
+
   suite::Shared shared;
   suite::Engine engine;
   suite::Meters meters;
