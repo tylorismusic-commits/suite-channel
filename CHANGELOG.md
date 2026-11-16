@@ -16,6 +16,6 @@ First working vertical channel strip.
   native console colour, internal 1x/2x/4x oversampling.
 - Constant-latency EQ IN crossfade.
 - Vertical output fader, comp/gate GR meters and stereo output meter.
-- 24 factory presets across Vocal, Drums, Bass, Guitars, Mix Bus and Utility.
+- 23 factory presets across Vocal, Drums, Bass, Guitars, Mix Bus and Utility.
 - LV2 metadata generated from `params.hpp` / `presets.hpp`; `--check` test.
 - Minimal CLAP and LV2 host smoke tests.
