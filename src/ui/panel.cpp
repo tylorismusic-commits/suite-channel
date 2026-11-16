@@ -817,10 +817,15 @@ void Panel::drawBody(cairo_t* cr, const Shared& shared,
   grMeter(562, 168, 28, 180, state.gateGrDb, 40.0, {0.35, 0.80, 0.45},
           "GATE");
 
-  // Output level meter, to the left of the long fader.
-  drawLevelMeter(cr, 528, 380, 44, 300, state.outLevelL, state.outLevelR,
+  // Input and output level meters, stacked to the left of the long fader.
+  drawLevelMeter(cr, 528, 380, 44, 140, state.inLevelL, state.inLevelR,
                  -60.0, 6.0, true);
-  text(cr, "OUT", 550, 696, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
+  text(cr, "IN", 550, 530, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
+       skin.legendDim.b);
+
+  drawLevelMeter(cr, 528, 548, 44, 140, state.outLevelL, state.outLevelR,
+                 -60.0, 6.0, true);
+  text(cr, "OUT", 550, 698, 8.5, 1, skin.legendDim.r, skin.legendDim.g,
        skin.legendDim.b);
 
   // Footer.

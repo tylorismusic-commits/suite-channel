@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — 2026-11-16
+
+- Added a stacked stereo **input level meter** above the output meter, with
+  the same LED ladder and dB marks.
+- Input metering is pre-trim; output remains post-fader/clip.
+- Input and output meters both receive LV2 UI port notifications.
+
 ## 0.1.0 — 2026-11-15
 
 First working vertical channel strip.
