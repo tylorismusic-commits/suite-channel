@@ -67,7 +67,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_clean-vocal>
     a pset:Preset ;
@@ -109,7 +109,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.52 ] .
+    [ lv2:symbol "output" ; pset:value 0.765 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_forward-vocal>
     a pset:Preset ;
@@ -151,7 +151,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_rock-vocal>
     a pset:Preset ;
@@ -193,7 +193,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_76-vocal-slam>
     a pset:Preset ;
@@ -235,7 +235,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.46 ] .
+    [ lv2:symbol "output" ; pset:value 0.7097 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_kick-punch>
     a pset:Preset ;
@@ -277,7 +277,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_snare-crack>
     a pset:Preset ;
@@ -319,7 +319,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_drum-bus>
     a pset:Preset ;
@@ -361,7 +361,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.52 ] .
+    [ lv2:symbol "output" ; pset:value 0.765 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_room-crush>
     a pset:Preset ;
@@ -403,7 +403,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.44 ] .
+    [ lv2:symbol "output" ; pset:value 0.6903 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_bass-di>
     a pset:Preset ;
@@ -445,7 +445,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_bass-amp>
     a pset:Preset ;
@@ -487,7 +487,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_aggressive-bass>
     a pset:Preset ;
@@ -529,7 +529,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.46 ] .
+    [ lv2:symbol "output" ; pset:value 0.7097 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_clean-guitar>
     a pset:Preset ;
@@ -571,7 +571,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_double-guitar>
     a pset:Preset ;
@@ -613,7 +613,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_lead-guitar>
     a pset:Preset ;
@@ -655,7 +655,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_mix-bus-glue>
     a pset:Preset ;
@@ -697,7 +697,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_mix-bus-punch>
     a pset:Preset ;
@@ -739,7 +739,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_mix-bus-air>
     a pset:Preset ;
@@ -781,7 +781,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.48 ] .
+    [ lv2:symbol "output" ; pset:value 0.7296 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_gate-tight>
     a pset:Preset ;
@@ -823,7 +823,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 1 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_expander-gentle>
     a pset:Preset ;
@@ -865,7 +865,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 0 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_colour-only>
     a pset:Preset ;
@@ -907,7 +907,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_76-drum-smash>
     a pset:Preset ;
@@ -949,7 +949,7 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.45 ] .
+    [ lv2:symbol "output" ; pset:value 0.6999 ] .
 
 <https://github.com/tylorismusic-commits/suite-channel#preset_bass-bus>
     a pset:Preset ;
@@ -991,5 +991,5 @@
     [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
-    [ lv2:symbol "output" ; pset:value 0.5 ] .
+    [ lv2:symbol "output" ; pset:value 0.75 ] .
 

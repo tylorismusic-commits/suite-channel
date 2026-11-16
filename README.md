@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.1.5** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.1.6** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -92,7 +92,7 @@ These are the 4K EQ 2 calibrated filters.
 
 ### Output / metering
 
-- **Output fader**: Off to +12 dB, with 0 dB at the centre.
+- **Output fader**: Off to +12 dB, with 0 dB about 3/4 of the way up.
 - **COMP** GR meter (orange), **GATE** GR meter (green).
 - Stereo output peak meter.
 - Hidden ADAA safety clip at −0.2 dBFS.
@@ -142,7 +142,8 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.1.5 gives the output fader a true off position and +12 dB top.
+0.1.6 puts output unity at 3/4 travel, with +12 dB at the top and off at the
+bottom. 0.1.5 gave the output fader a true off position and +12 dB top.
 0.1.4 matched the output fader thumb to the Reapertips 27×53 MCP thumb.
 0.1.3 cleaned up the gate subheader and control row. 0.1.2 corrected the input
 meter to measure after the input trim; 0.1.1 added the stacked stereo input

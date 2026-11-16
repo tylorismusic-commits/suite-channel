@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.6 — 2026-11-16
+
+- Output fader unity moved to **3/4 travel**. Top is **+12 dB**, bottom is
+  **OFF**, and the lower range uses the cubic gain taper.
+- Fader marks updated to +12 / +6 / 0 / −12 / −24 / OFF.
+- Factory preset output trims remapped to preserve their previous dB values;
+  the default output is now 0.75 (0 dB).
+- Note: a saved session with the old 0.5 output position now plays about
+  10.5 dB quieter. This is the intentional fader-law change.
+
 ## 0.1.5 — 2026-11-16
 
 - Output fader is now **Off at the bottom**, **0 dB at centre** and **+12 dB at

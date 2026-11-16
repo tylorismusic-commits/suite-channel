@@ -1146,8 +1146,8 @@ void Panel::drawFader(cairo_t* cr, const Widget& w, double value) const {
     const char* label;
     double value;
   };
-  const FaderMark marks[] = {{"+12", 1.0},    {"+6", 0.75},  {"0", 0.5},
-                             {"-12", 0.3155}, {"-24", 0.199}, {"OFF", 0.0}};
+  const FaderMark marks[] = {{"+12", 1.0},    {"+6", 0.875}, {"0", 0.75},
+                             {"-12", 0.4732}, {"-24", 0.2986}, {"OFF", 0.0}};
   for (const FaderMark& mark : marks) {
     const double ty = bottom - mark.value * (bottom - top);
     text(cr, mark.label, cx + 28, ty + 3, 7.5, 0, skin.legendDim.r,

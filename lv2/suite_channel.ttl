@@ -23,7 +23,7 @@
     doap:homepage <https://github.com/tylorismusic-commits/suite-channel> ;
     lv2:majorVersion 0 ;
     lv2:minorVersion 1 ;
-    lv2:microVersion 5 ;
+    lv2:microVersion 6 ;
     lv2:binary <suite_channel.so> ;
     rdfs:seeAlso <manifest.ttl> ;
     ui:ui <https://github.com/tylorismusic-commits/suite-channel#ui> ;
@@ -452,7 +452,7 @@
         lv2:index 38 ;
         lv2:symbol "output" ;
         lv2:name "Output" ;
-        lv2:default 0.5 ;
+        lv2:default 0.75 ;
         lv2:minimum 0 ;
         lv2:maximum 1 ;
         units:unit units:dB ;

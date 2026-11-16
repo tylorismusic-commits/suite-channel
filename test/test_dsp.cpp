@@ -46,8 +46,8 @@ void fillConst(std::vector<float>& l, std::vector<float>& r, float dbfs) {
 
 int main() {
   // Fader law: unity at centre, +12 dB at the top, silence at the bottom.
-  assert(std::fabs(suite::outputGainLinear(0.5f) - 1.0f) < 1.0e-5f);
-  assert(std::fabs(suite::outputGainDb(0.5f)) < 1.0e-4f);
+  assert(std::fabs(suite::outputGainLinear(0.75f) - 1.0f) < 1.0e-5f);
+  assert(std::fabs(suite::outputGainDb(0.75f)) < 1.0e-4f);
   assert(std::fabs(suite::outputGainDb(1.0f) - 12.0f) < 0.01f);
   assert(suite::outputGainLinear(0.0f) == 0.0f);
 

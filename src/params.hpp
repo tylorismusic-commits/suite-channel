@@ -141,7 +141,7 @@ inline constexpr ParamSpec kParamSpecs[P_COUNT] = {
      nullptr, labels(kGateModeLabels)},
     {"dyn_post", "Dynamics Post EQ", "Dynamics", 0.0, 1.0, 0.0, true, false,
      true, nullptr, {}},
-    {"output", "Output", "Output", 0.0, 1.0, 0.5, false, false, false, "dB", {}},
+    {"output", "Output", "Output", 0.0, 1.0, 0.75, false, false, false, "dB", {}},
     {"oversample", "Oversampling", "Global", 0.0, 2.0, 2.0, true, false, false,
      nullptr, labels(kOversampleLabels)},
 };
