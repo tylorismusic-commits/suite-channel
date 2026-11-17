@@ -267,6 +267,16 @@ void Panel::text(cairo_t* cr, const char* s, double x, double y, double size,
   } else if (align == 2) {
     tx -= (ext.width + ext.x_bearing);
   }
+  // Snap the baseline to physical pixels. At fractional UI scales a baseline
+  // on a half pixel is the main reason small labels look soft.
+  cairo_matrix_t m;
+  cairo_get_matrix(cr, &m);
+  if (m.xx != 0.0 && m.yy != 0.0) {
+    const double devX = std::round(m.xx * tx + m.x0);
+    const double devY = std::round(m.yy * y + m.y0);
+    tx = (devX - m.x0) / m.xx;
+    y = (devY - m.y0) / m.yy;
+  }
   cairo_set_source_rgb(cr, r, g, b);
   cairo_move_to(cr, tx, y);
   cairo_show_text(cr, s);
@@ -536,6 +546,15 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
 void Panel::draw(cairo_t* cr, const Shared& shared, const PanelState& state) {
   layout(shared, state);
+  // Full hinting and integer advance metrics keep 8-10 px labels crisp when
+  // the 700x920 panel is scaled down to fit a smaller screen.
+  cairo_font_options_t* fontOptions = cairo_font_options_create();
+  cairo_surface_get_font_options(cairo_get_target(cr), fontOptions);
+  cairo_font_options_set_hint_style(fontOptions, CAIRO_HINT_STYLE_FULL);
+  cairo_font_options_set_hint_metrics(fontOptions, CAIRO_HINT_METRICS_ON);
+  cairo_set_font_options(cr, fontOptions);
+  cairo_font_options_destroy(fontOptions);
+
   cairo_set_source_rgb(cr, 0.055, 0.060, 0.070);
   cairo_paint(cr);
 

@@ -251,6 +251,7 @@ private:
       cairo_surface_flush(backing);
       cairo_t* xcr = cairo_create(windowSurface);
       cairo_set_source_surface(xcr, backing, 0, 0);
+      cairo_pattern_set_filter(cairo_get_source(xcr), CAIRO_FILTER_NEAREST);
       cairo_paint(xcr);
       cairo_destroy(xcr);
       // Required: cairo's Xlib backend buffers the composite, and without

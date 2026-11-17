@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.2.4** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.2.5** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
@@ -166,7 +166,9 @@ session. Treat the URI as permanent.
 
 ## Current status
 
-0.2.4 tightens the Input/Colour and EQ knob groups against their labels,
+0.2.5 sharpens the editor at reduced scales with full font hinting, integer
+metrics, physical-pixel text snapping and a nearest-neighbour present.
+0.2.4 tightened the Input/Colour and EQ knob groups against their labels,
 centres the filter knobs, moves the phase and EQ IN buttons above their section
 rules, and clears the EQ Freq/Q scale labels from the knob bodies.
 0.2.3 put the gate GR meter on the CLAP/LV2 meters, aligned the phase and EQ IN
