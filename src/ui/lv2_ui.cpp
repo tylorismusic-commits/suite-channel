@@ -360,10 +360,11 @@ void uiPortEvent(LV2UI_Handle handle, uint32_t port, uint32_t size,
   constexpr uint32_t kMeterBase = kFirstParam + suite::P_COUNT;
   switch (port) {
     case kMeterBase: ui->shared.grDb.store(v); break;
-    case kMeterBase + 1: ui->shared.outPeakLDb.store(v); break;
-    case kMeterBase + 2: ui->shared.outPeakRDb.store(v); break;
-    case kMeterBase + 3: ui->shared.inPeakLDb.store(v); break;
-    case kMeterBase + 4: ui->shared.inPeakRDb.store(v); break;
+    case kMeterBase + 1: ui->shared.gateGrDb.store(v); break;
+    case kMeterBase + 2: ui->shared.outPeakLDb.store(v); break;
+    case kMeterBase + 3: ui->shared.outPeakRDb.store(v); break;
+    case kMeterBase + 4: ui->shared.inPeakLDb.store(v); break;
+    case kMeterBase + 5: ui->shared.inPeakRDb.store(v); break;
     default: break;
   }
 }

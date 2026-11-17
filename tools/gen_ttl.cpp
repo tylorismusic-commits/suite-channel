@@ -205,6 +205,7 @@ std::string buildPluginTtl() {
   };
   const MeterPort meters[] = {
       {"gr_meter", "Gain Reduction", 0.0, 40.0, "Meter"},
+      {"gate_gr_meter", "Gate Gain Reduction", 0.0, 40.0, "Meter"},
       {"out_peak_l", "Output Peak Left", -120.0, 24.0, "Meter"},
       {"out_peak_r", "Output Peak Right", -120.0, 24.0, "Meter"},
       {"in_peak_l", "Input Peak Left", -120.0, 24.0, "Meter"},
@@ -289,8 +290,8 @@ std::string buildManifestTtl() {
         << suite::kParamSpecs[id].symbol
         << "\" ; ui:protocol ui:floatProtocol ]";
   }
-  const char* const meters[] = {"gr_meter", "out_peak_l", "out_peak_r",
-                                "in_peak_l", "in_peak_r"};
+  const char* const meters[] = {"gr_meter", "gate_gr_meter", "out_peak_l",
+                                "out_peak_r", "in_peak_l", "in_peak_r"};
   for (const char* meter : meters) {
     out << " ,\n        [ ui:plugin <" << kUri << "> ; ui:symbol \""
         << meter << "\" ; ui:protocol ui:floatProtocol ]";

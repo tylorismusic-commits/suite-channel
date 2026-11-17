@@ -111,7 +111,7 @@ KnobPalette paletteFor(uint32_t param, bool blackEq) {
   }
 }
 
-const char* const kScaleInput[] = {"-18", "0", "+18"};
+const char* const kScaleInput[] = {"-18", "", "+18"};
 const char* const kScaleAmount[] = {"0", "", "10"};
 const char* const kScaleHPF[] = {"OUT", "40", "90", "190", "350"};
 const char* const kScaleLPF[] = {"OUT", "3k", "6k", "10k", "15.2k"};
@@ -314,6 +314,12 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
     widgets_.push_back(b);
   };
 
+  auto alignLabels = [&](size_t first, double y) {
+    for (size_t i = first; i < widgets_.size(); ++i) {
+      widgets_[i].labelY = y;
+    }
+  };
+
   auto button = [&](uint32_t param, double x, double y, double w, double h,
                     double value, const char* label) {
     Widget b;
@@ -408,9 +414,11 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   }
 
   // Input / colour.
+  const size_t inputRow = widgets_.size();
   knob(P_INPUT, 80, 176, 28, "INPUT", sc(kScaleInput), true);
   knob(P_COLOR_AMOUNT, 180, 176, 24, "COLOUR", sc(kScaleAmount), true);
-  pill(P_POLARITY, 165, 132, 64, 20, "\u00d8");
+  alignLabels(inputRow, 233.0);
+  pill(P_POLARITY, 165, 130, 32, 20, "\u00d8");
 
   // Dynamics.
   pill(P_DYN_POST, 60, 286, 56, 22, "POST EQ");
@@ -420,23 +428,27 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   button(P_COMP_TYPE, 168, 286, 44, 22, 1.0, "76");
   widgets_.back().onSilver = silverComp;
 
+  const size_t compKnobRow = widgets_.size();
   knob(P_COMP_THRESHOLD, 80, 372, 26, "THRESH",
        sc(kScaleCompThresh), true);
   widgets_.back().onSilver = silverComp;
   knob(P_COMP_MAKEUP, 180, 372, 24, "MAKEUP", sc(kScaleMakeup), true);
   widgets_.back().onSilver = silverComp;
-  pill(P_COMP_FAST, 44, 430, 58, 22, "F.ATK");
+  alignLabels(compKnobRow, 424.0);
+  pill(P_COMP_FAST, 44, 432, 58, 22, "F.ATK");
   widgets_.back().onSilver = silverComp;
-  pill(P_COMP_AUTO, 112, 430, 56, 22, "AUTO");
+  pill(P_COMP_AUTO, 112, 432, 56, 22, "AUTO");
   widgets_.back().onSilver = silverComp;
-  pill(P_COMP_IN, 112, 456, 56, 22, "COMP");
+  pill(P_COMP_IN, 112, 458, 56, 22, "COMP");
   widgets_.back().onSilver = silverComp;
 
   // Gate.
+  const size_t gateKnobRow = widgets_.size();
   knob(P_GATE_THRESHOLD, 60, 550, 24, "THRESH",
        sc(kScaleGateThresh), true);
   knob(P_GATE_RANGE, 130, 550, 22, "RANGE", sc(kScaleRange), true);
   knob(P_GATE_RELEASE, 200, 550, 22, "RELEASE", sc(kScaleRelease), true);
+  alignLabels(gateKnobRow, 601.0);
   pill(P_GATE_FAST, 32, 620, 58, 22, "F.ATK");
   button(P_GATE_MODE, 96, 620, 44, 22, 1.0, "GATE");
   button(P_GATE_MODE, 144, 620, 44, 22, 0.0, "EXP");
@@ -455,34 +467,44 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   }
 
   // Filters.
+  const size_t filterRow = widgets_.size();
   knob(P_HPF, 80, 776, 26, "HPF", sc(kScaleHPF), true);
   knob(P_LPF, 180, 776, 26, "LPF", sc(kScaleLPF), true);
+  alignLabels(filterRow, 831.0);
 
   // EQ.
-  pill(P_EQ_IN, 350, 136, 52, 22, "EQ IN");
+  pill(P_EQ_IN, 355, 130, 52, 20, "EQ IN");
   button(P_EQ_TYPE, 316, 788, 62, 22, 0.0, "BROWN");
   button(P_EQ_TYPE, 384, 788, 62, 22, 1.0, "BLACK");
 
   // HF.
+  const size_t hfRow = widgets_.size();
   knob(P_HF_GAIN, 330, 208, 28, "HF", sc(kScaleGain), true, 1.35);
   knob(P_HF_FREQ, 405, 208, 22, "FREQ", sc(kScaleFreqHF), true, 1.30);
+  alignLabels(hfRow, 263.0);
   pill(P_HF_BELL, 450, 272, 52, 22, "BELL");
 
   // HMF.
+  const size_t hmfRow = widgets_.size();
   knob(P_HM_GAIN, 330, 360, 28, "HMF", sc(kScaleGain), true, 1.35);
   knob(P_HM_FREQ, 405, 360, 22, "FREQ", sc(kScaleFreqHM), true, 1.30);
+  alignLabels(hmfRow, 415.0);
   knob(P_HM_Q, 452, 410, 22, "Q", sc(kScaleQ), true, 1.30);
 
   // LMF.
+  const size_t lmfRow = widgets_.size();
   knob(P_LM_GAIN, 330, 512, 28, "LMF", sc(kScaleGain), true, 1.35);
   knob(P_LM_FREQ, 405, 512, 22, "FREQ", sc(kScaleFreqLM), true, 1.30);
+  alignLabels(lmfRow, 567.0);
   knob(P_LM_Q, 452, 562, 22, "Q", sc(kScaleQ), true, 1.30);
 
   // LF.
+  const size_t lfRow = widgets_.size();
   knob(P_LF_GAIN, 330, 664, 28, "LF", sc(kScaleGain), true, 1.35);
   widgets_.back().blackEq = blackEq;
   knob(P_LF_FREQ, 405, 664, 22, "FREQ", sc(kScaleFreqLF), true, 1.30);
   widgets_.back().blackEq = blackEq;
+  alignLabels(lfRow, 719.0);
   pill(P_LF_BELL, 450, 728, 52, 22, "BELL");
   widgets_.back().blackEq = blackEq;
 
@@ -563,7 +585,7 @@ void Panel::drawHeader(cairo_t* cr, const Shared& shared,
   cairo_line_to(cr, kPanelWidth, 107.5);
   cairo_stroke(cr);
 
-  text(cr, "SUITE CHANNEL", 530, 38, 12.0, 1, 0.82, 0.85, 0.88);
+  text(cr, "SUITE CHANNEL", 544, 38, 12.0, 1, 0.82, 0.85, 0.88);
   drawPresetBar(cr, shared, state);
 }
 
@@ -1282,7 +1304,10 @@ void Panel::drawKnob(cairo_t* cr, const Widget& w, double value) const {
                 cy + std::sin(a) * r * 0.78);
   cairo_stroke(cr);
 
-  const double labelY = w.labelBelow ? cy + r * 1.44 + 18 : cy - r * 1.44 - 16;
+  const double labelY =
+      w.labelY > 0.0
+          ? w.labelY
+          : (w.labelBelow ? cy + r * 1.44 + 18 : cy - r * 1.44 - 16);
   text(cr, w.label, cx, labelY, 10.0, 1, legend.r, legend.g,
        legend.b);
 }

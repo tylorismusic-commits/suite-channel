@@ -23,6 +23,7 @@ enum Port : uint32_t {
   PORT_AUDIO_OUT_R = 3,
   PORT_FIRST_PARAM = 4,
   PORT_GR_METER = PORT_FIRST_PARAM + suite::P_COUNT,
+  PORT_GATE_GR_METER,
   PORT_OUT_PEAK_L,
   PORT_OUT_PEAK_R,
   PORT_IN_PEAK_L,
@@ -46,6 +47,7 @@ struct Plugin {
   float* audioOutL = nullptr;
   float* audioOutR = nullptr;
   float* gr = nullptr;
+  float* gateGr = nullptr;
   float* outPeakL = nullptr;
   float* outPeakR = nullptr;
   float* inPeakL = nullptr;
@@ -87,6 +89,7 @@ void connectPort(LV2_Handle handle, uint32_t port, void* data) {
     case PORT_AUDIO_OUT_L: p->audioOutL = fp; break;
     case PORT_AUDIO_OUT_R: p->audioOutR = fp; break;
     case PORT_GR_METER: p->gr = fp; break;
+    case PORT_GATE_GR_METER: p->gateGr = fp; break;
     case PORT_OUT_PEAK_L: p->outPeakL = fp; break;
     case PORT_OUT_PEAK_R: p->outPeakR = fp; break;
     case PORT_IN_PEAK_L: p->inPeakL = fp; break;
@@ -143,6 +146,9 @@ void run(LV2_Handle handle, uint32_t frames) {
 
   if (p->gr) {
     *p->gr = p->meters.grDb;
+  }
+  if (p->gateGr) {
+    *p->gateGr = p->meters.gateGrDb;
   }
   if (p->outPeakL) {
     *p->outPeakL = p->meters.outPeakLDb;

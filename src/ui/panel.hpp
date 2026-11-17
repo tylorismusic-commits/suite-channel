@@ -114,6 +114,7 @@ private:
     double r = 0.0;
     int steps = 0;
     double scaleRadius = 1.44;
+    double labelY = 0.0;  // 0 = derive from the knob radius
     const char* label = "";
     std::vector<const char*> scale;
     bool labelBelow = false;

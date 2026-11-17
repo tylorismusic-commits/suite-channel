@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.3 — 2026-11-16
+
+- Gate GR meter now works: the CLAP editor publishes gate gain reduction, and
+  LV2 has a new **Gate Gain Reduction** meter port.
+- Phase button moved into the Input/Colour header row, made compact and
+  aligned with the title.
+- EQ IN sits in the Equaliser header row, aligned with the title.
+- Removed the Input knob's top "0" scale label, which collided with the section
+  title and looked like a stray phase symbol.
+- Knob name labels share one baseline per row (input/colour, compressor, gate,
+  HF/HMF/LMF/LF gain+freq), so labels no longer sit at different heights.
+- Wordmark centred between PASTE and OS 4X.
+- Compressor buttons nudged down for a little more space under their labels.
+
 ## 0.2.2 — 2026-11-16
 
 - Fixed the gate staying shut with Range at maximum: a host that provides a

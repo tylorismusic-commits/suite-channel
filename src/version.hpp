@@ -7,6 +7,6 @@ namespace suite {
 constexpr int kVersionMajor = 0;
 constexpr int kVersionMinor = 1;
 constexpr int kVersionMicro = 6;
-constexpr const char* kVersion = "0.2.2";
+constexpr const char* kVersion = "0.2.3";
 
 } // namespace suite

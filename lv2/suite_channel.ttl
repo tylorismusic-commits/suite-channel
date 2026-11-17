@@ -511,6 +511,18 @@
     [
         a lv2:OutputPort , lv2:ControlPort ;
         lv2:index 43 ;
+        lv2:symbol "gate_gr_meter" ;
+        lv2:name "Gate Gain Reduction" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 40 ;
+        units:unit units:db ;
+        lv2:portProperty pprops:notOnGUI ;
+        pg:group <https://github.com/tylorismusic-commits/suite-channel#meter> ;
+    ] ,
+    [
+        a lv2:OutputPort , lv2:ControlPort ;
+        lv2:index 44 ;
         lv2:symbol "out_peak_l" ;
         lv2:name "Output Peak Left" ;
         lv2:default 0 ;
@@ -522,7 +534,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 44 ;
+        lv2:index 45 ;
         lv2:symbol "out_peak_r" ;
         lv2:name "Output Peak Right" ;
         lv2:default 0 ;
@@ -534,7 +546,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 45 ;
+        lv2:index 46 ;
         lv2:symbol "in_peak_l" ;
         lv2:name "Input Peak Left" ;
         lv2:default 0 ;
@@ -546,7 +558,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 46 ;
+        lv2:index 47 ;
         lv2:symbol "in_peak_r" ;
         lv2:name "Input Peak Right" ;
         lv2:default 0 ;
@@ -558,7 +570,7 @@
     ] ,
     [
         a lv2:OutputPort , lv2:ControlPort ;
-        lv2:index 47 ;
+        lv2:index 48 ;
         lv2:symbol "latency" ;
         lv2:name "Latency" ;
         lv2:default 0 ;

@@ -801,6 +801,7 @@ clap_process_status pluginProcess(const clap_plugin_t* p, const clap_process_t* 
 
   s->grForHost.store(s->meters.grDb, std::memory_order_relaxed);
   s->shared.grDb.store(s->meters.grDb, std::memory_order_relaxed);
+  s->shared.gateGrDb.store(s->meters.gateGrDb, std::memory_order_relaxed);
   s->shared.inPeakDb.store(s->meters.inPeakDb, std::memory_order_relaxed);
   s->shared.outPeakDb.store(s->meters.outPeakDb, std::memory_order_relaxed);
   s->shared.outVuDb.store(s->meters.outVuDb, std::memory_order_relaxed);
