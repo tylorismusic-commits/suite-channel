@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.4 — 2026-11-16
+
+- Input and Colour knobs moved down and their name labels lifted, tightening
+  the group under the section header.
+- Filters knobs centred in the left column; Input/Colour, compressor and gate
+  knob rows nudged onto the panel centre line.
+- Phase and EQ IN buttons moved fully above their section rules.
+- EQ Freq and Q knobs use a wider scale radius so their scale labels clear the
+  knob bodies; the Q knobs moved right and down to stop colliding with the
+  Freq scale labels.
+- Knob name labels pulled closer to their scale labels across the compressor,
+  gate and EQ rows.
+
 ## 0.2.3 — 2026-11-16
 
 - Gate GR meter now works: the CLAP editor publishes gate gain reduction, and

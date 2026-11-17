@@ -415,10 +415,10 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
   // Input / colour.
   const size_t inputRow = widgets_.size();
-  knob(P_INPUT, 80, 176, 28, "INPUT", sc(kScaleInput), true);
-  knob(P_COLOR_AMOUNT, 180, 176, 24, "COLOUR", sc(kScaleAmount), true);
-  alignLabels(inputRow, 233.0);
-  pill(P_POLARITY, 165, 130, 32, 20, "\u00d8");
+  knob(P_INPUT, 84, 184, 26, "INPUT", sc(kScaleInput), true, 1.30);
+  knob(P_COLOR_AMOUNT, 184, 184, 26, "COLOUR", sc(kScaleAmount), true, 1.30);
+  alignLabels(inputRow, 224.0);
+  pill(P_POLARITY, 165, 128, 32, 20, "\u00d8");
 
   // Dynamics.
   pill(P_DYN_POST, 60, 286, 56, 22, "POST EQ");
@@ -429,12 +429,12 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
   widgets_.back().onSilver = silverComp;
 
   const size_t compKnobRow = widgets_.size();
-  knob(P_COMP_THRESHOLD, 80, 372, 26, "THRESH",
+  knob(P_COMP_THRESHOLD, 84, 372, 26, "THRESH",
        sc(kScaleCompThresh), true);
   widgets_.back().onSilver = silverComp;
-  knob(P_COMP_MAKEUP, 180, 372, 24, "MAKEUP", sc(kScaleMakeup), true);
+  knob(P_COMP_MAKEUP, 184, 372, 24, "MAKEUP", sc(kScaleMakeup), true);
   widgets_.back().onSilver = silverComp;
-  alignLabels(compKnobRow, 424.0);
+  alignLabels(compKnobRow, 413.0);
   pill(P_COMP_FAST, 44, 432, 58, 22, "F.ATK");
   widgets_.back().onSilver = silverComp;
   pill(P_COMP_AUTO, 112, 432, 56, 22, "AUTO");
@@ -444,11 +444,11 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
   // Gate.
   const size_t gateKnobRow = widgets_.size();
-  knob(P_GATE_THRESHOLD, 60, 550, 24, "THRESH",
+  knob(P_GATE_THRESHOLD, 65, 550, 24, "THRESH",
        sc(kScaleGateThresh), true);
-  knob(P_GATE_RANGE, 130, 550, 22, "RANGE", sc(kScaleRange), true);
-  knob(P_GATE_RELEASE, 200, 550, 22, "RELEASE", sc(kScaleRelease), true);
-  alignLabels(gateKnobRow, 601.0);
+  knob(P_GATE_RANGE, 135, 550, 22, "RANGE", sc(kScaleRange), true);
+  knob(P_GATE_RELEASE, 205, 550, 22, "RELEASE", sc(kScaleRelease), true);
+  alignLabels(gateKnobRow, 591.0);
   pill(P_GATE_FAST, 32, 620, 58, 22, "F.ATK");
   button(P_GATE_MODE, 96, 620, 44, 22, 1.0, "GATE");
   button(P_GATE_MODE, 144, 620, 44, 22, 0.0, "EXP");
@@ -468,43 +468,45 @@ void Panel::layout(const Shared& shared, const PanelState& state) {
 
   // Filters.
   const size_t filterRow = widgets_.size();
-  knob(P_HPF, 80, 776, 26, "HPF", sc(kScaleHPF), true);
-  knob(P_LPF, 180, 776, 26, "LPF", sc(kScaleLPF), true);
-  alignLabels(filterRow, 831.0);
+  knob(P_HPF, 84, 776, 26, "HPF", sc(kScaleHPF), true);
+  knob(P_LPF, 184, 776, 26, "LPF", sc(kScaleLPF), true);
+  alignLabels(filterRow, 818.0);
 
   // EQ.
-  pill(P_EQ_IN, 355, 130, 52, 20, "EQ IN");
+  pill(P_EQ_IN, 355, 128, 52, 20, "EQ IN");
   button(P_EQ_TYPE, 316, 788, 62, 22, 0.0, "BROWN");
   button(P_EQ_TYPE, 384, 788, 62, 22, 1.0, "BLACK");
 
   // HF.
   const size_t hfRow = widgets_.size();
   knob(P_HF_GAIN, 330, 208, 28, "HF", sc(kScaleGain), true, 1.35);
-  knob(P_HF_FREQ, 405, 208, 22, "FREQ", sc(kScaleFreqHF), true, 1.30);
-  alignLabels(hfRow, 263.0);
+  knob(P_HF_FREQ, 405, 208, 22, "FREQ", sc(kScaleFreqHF), true, 1.45);
+  alignLabels(hfRow, 250.0);
   pill(P_HF_BELL, 450, 272, 52, 22, "BELL");
 
   // HMF.
   const size_t hmfRow = widgets_.size();
   knob(P_HM_GAIN, 330, 360, 28, "HMF", sc(kScaleGain), true, 1.35);
-  knob(P_HM_FREQ, 405, 360, 22, "FREQ", sc(kScaleFreqHM), true, 1.30);
-  alignLabels(hmfRow, 415.0);
-  knob(P_HM_Q, 452, 410, 22, "Q", sc(kScaleQ), true, 1.30);
+  knob(P_HM_FREQ, 405, 360, 22, "FREQ", sc(kScaleFreqHM), true, 1.45);
+  alignLabels(hmfRow, 402.0);
+  knob(P_HM_Q, 460, 418, 22, "Q", sc(kScaleQ), true, 1.45);
+  widgets_.back().labelY = 455.0;
 
   // LMF.
   const size_t lmfRow = widgets_.size();
   knob(P_LM_GAIN, 330, 512, 28, "LMF", sc(kScaleGain), true, 1.35);
-  knob(P_LM_FREQ, 405, 512, 22, "FREQ", sc(kScaleFreqLM), true, 1.30);
-  alignLabels(lmfRow, 567.0);
-  knob(P_LM_Q, 452, 562, 22, "Q", sc(kScaleQ), true, 1.30);
+  knob(P_LM_FREQ, 405, 512, 22, "FREQ", sc(kScaleFreqLM), true, 1.45);
+  alignLabels(lmfRow, 554.0);
+  knob(P_LM_Q, 460, 570, 22, "Q", sc(kScaleQ), true, 1.45);
+  widgets_.back().labelY = 607.0;
 
   // LF.
   const size_t lfRow = widgets_.size();
   knob(P_LF_GAIN, 330, 664, 28, "LF", sc(kScaleGain), true, 1.35);
   widgets_.back().blackEq = blackEq;
-  knob(P_LF_FREQ, 405, 664, 22, "FREQ", sc(kScaleFreqLF), true, 1.30);
+  knob(P_LF_FREQ, 405, 664, 22, "FREQ", sc(kScaleFreqLF), true, 1.45);
   widgets_.back().blackEq = blackEq;
-  alignLabels(lfRow, 719.0);
+  alignLabels(lfRow, 706.0);
   pill(P_LF_BELL, 450, 728, 52, 22, "BELL");
   widgets_.back().blackEq = blackEq;
 
