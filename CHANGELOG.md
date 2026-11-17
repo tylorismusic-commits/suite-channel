@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.5 — 2026-11-16
+
+- Sharper rendering at reduced UI scales:
+  - full FreeType hinting with integer hint metrics for the Jost face,
+  - text baselines and origins snapped to physical pixels,
+  - nearest-neighbour present from the backing surface to the X11 window.
+- Applies to both CLAP and LV2 editors and to the 0.9x preview renders.
+
 ## 0.2.4 — 2026-11-16
 
 - Input and Colour knobs moved down and their name labels lifted, tightening
