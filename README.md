@@ -10,7 +10,9 @@ language. It combines:
 - a switchable **VCA / 76Blue** compressor with fixed ratios,
 - the vendored Dusk **4K EQ 2** four-band console EQ with Brown/Black voicings
   and HPF/LPF,
-- a vertical output fader and metering.
+- a vertical output fader and metering;
+- a factory and user preset bank with save, rename, duplicate, delete, export
+  and drag-drop import.
 
 The 700×920 strip opens at 1.0× on a 1080p display, and scales down on smaller
 screens. It is an independent design. It is not affiliated with or endorsed by

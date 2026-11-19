@@ -8,6 +8,9 @@
 #include <cassert>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <filesystem>
+#include <string>
 
 #include "presets.hpp"
 #include "ui/panel.hpp"
@@ -170,6 +173,67 @@ int main() {
     assert(et >= 0 && et <= 1);
     assert(gm >= 0 && gm <= 2);
     panel.draw(cr, shared, state);
+  }
+
+
+  {
+    namespace fs = std::filesystem;
+    const fs::path root = fs::temp_directory_path() / "suite-channel-preset-test";
+    fs::remove_all(root);
+    fs::create_directories(root / "config");
+    fs::create_directories(root / "home");
+    const std::string oldXdg =
+        std::getenv("XDG_CONFIG_HOME") ? std::getenv("XDG_CONFIG_HOME") : "";
+    const std::string oldHome =
+        std::getenv("HOME") ? std::getenv("HOME") : "";
+    setenv("XDG_CONFIG_HOME", (root / "config").string().c_str(), 1);
+    setenv("HOME", (root / "home").string().c_str(), 1);
+
+    suite::Shared us;
+    suite::PanelState st;
+    suite::Panel p;
+    us.set(suite::P_COLOR_AMOUNT, 0.63);
+    const double saved = us.get(suite::P_COLOR_AMOUNT);
+    p.handlePresetClick(us, st, 194, 30);
+    p.handlePresetClick(us, st, 100, 389);
+    assert(st.savePreset);
+    for (char c : std::string("My Channel")) p.textKey(us, st, 0, c);
+    p.textKey(us, st, suite::Panel::kTextEnter, 0);
+    assert(st.userPresets.size() == 1);
+    assert(st.presetIndex == suite::kPresetCount);
+    us.set(suite::P_COLOR_AMOUNT, 0.1);
+    p.applyPreset(us, st, st.presetIndex);
+    assert(std::fabs(us.get(suite::P_COLOR_AMOUNT) - saved) < 1e-9);
+
+    p.handlePresetClick(us, st, 194, 30);
+    p.handlePresetClick(us, st, 100, 419);
+    for (char c : std::string("Renamed")) p.textKey(us, st, 0, c);
+    p.textKey(us, st, suite::Panel::kTextEnter, 0);
+    assert(st.userPresets.size() == 1 && st.userPresets[0].name == "Renamed");
+
+    p.handlePresetClick(us, st, 194, 30);
+    p.handlePresetClick(us, st, 180, 389);
+    assert(st.userPresets.size() == 2);
+
+    p.handlePresetClick(us, st, 194, 30);
+    p.handlePresetClick(us, st, 220, 419);
+    const fs::path exported = suite::userPresetExportDir() /
+                              (std::string("Renamed copy") +
+                               suite::kUserPresetExt);
+    assert(fs::exists(exported));
+
+    p.handlePresetClick(us, st, 194, 30);
+    p.handlePresetClick(us, st, 160, 419);
+    p.handlePresetClick(us, st, 160, 419);
+    assert(st.userPresets.size() == 1);
+    assert(p.importDroppedFile(us, st, exported.string()));
+    assert(st.userPresets.size() == 2);
+
+    if (!oldXdg.empty()) setenv("XDG_CONFIG_HOME", oldXdg.c_str(), 1);
+    else unsetenv("XDG_CONFIG_HOME");
+    if (!oldHome.empty()) setenv("HOME", oldHome.c_str(), 1);
+    else unsetenv("HOME");
+    fs::remove_all(root);
   }
 
   cairo_destroy(cr);
