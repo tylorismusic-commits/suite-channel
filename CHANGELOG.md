@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — 2026-11-19
+
+- User preset bank: save, rename, duplicate, delete, export and drag-drop
+  import, alongside the factory presets.
+- Preset files live in `~/.config/SuiteChannel/presets` and export to
+  `~/Documents/Suite Channel Presets`.
+
 ## 0.2.5 — 2026-11-16
 
 - Sharper rendering at reduced UI scales:

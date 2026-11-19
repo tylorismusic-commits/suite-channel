@@ -1,6 +1,6 @@
 # Suite Channel
 
-**Version 0.2.5** · GPL-3.0-or-later · CLAP + LV2 · Linux
+**Version 0.3.0** · GPL-3.0-or-later · CLAP + LV2 · Linux
 
 Suite Channel is a vertical SSL-style channel strip in the Comp Suite visual
 language. It combines:
