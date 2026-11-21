@@ -27,6 +27,10 @@
     a pset:Bank ;
     rdfs:label "Mix Bus" .
 
+<https://github.com/tylorismusic-commits/suite-channel#bank_user>
+    a pset:Bank ;
+    rdfs:label "User" .
+
 <https://github.com/tylorismusic-commits/suite-channel#preset_init>
     a pset:Preset ;
     lv2:appliesTo <https://github.com/tylorismusic-commits/suite-channel> ;
@@ -1036,6 +1040,94 @@
     [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
     [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
     [ lv2:symbol "output" ; pset:value 0.75 ] ,
+    [ lv2:symbol "gate_hold" ; pset:value 0 ] ,
+    [ lv2:symbol "limiter" ; pset:value 1 ] .
+
+<https://github.com/tylorismusic-commits/suite-channel#preset_adds-air>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/tylorismusic-commits/suite-channel> ;
+    rdfs:label "Adds Air" ;
+    rdfs:comment "User" ;
+    pset:bank <https://github.com/tylorismusic-commits/suite-channel#bank_user> ;
+    lv2:port
+    [ lv2:symbol "input" ; pset:value 0.5 ] ,
+    [ lv2:symbol "polarity" ; pset:value 0 ] ,
+    [ lv2:symbol "color_model" ; pset:value 1 ] ,
+    [ lv2:symbol "color_amount" ; pset:value 0.35 ] ,
+    [ lv2:symbol "hpf" ; pset:value 0.11 ] ,
+    [ lv2:symbol "lpf" ; pset:value 0 ] ,
+    [ lv2:symbol "eq_type" ; pset:value 1 ] ,
+    [ lv2:symbol "eq_in" ; pset:value 1 ] ,
+    [ lv2:symbol "lf_gain" ; pset:value 0.605 ] ,
+    [ lv2:symbol "lf_freq" ; pset:value 0.18 ] ,
+    [ lv2:symbol "lf_bell" ; pset:value 1 ] ,
+    [ lv2:symbol "lm_gain" ; pset:value 0.455 ] ,
+    [ lv2:symbol "lm_freq" ; pset:value 0.397 ] ,
+    [ lv2:symbol "lm_q" ; pset:value 0.4 ] ,
+    [ lv2:symbol "hm_gain" ; pset:value 0.655 ] ,
+    [ lv2:symbol "hm_freq" ; pset:value 0.465 ] ,
+    [ lv2:symbol "hm_q" ; pset:value 0.4 ] ,
+    [ lv2:symbol "hf_gain" ; pset:value 0.775 ] ,
+    [ lv2:symbol "hf_freq" ; pset:value 0.707 ] ,
+    [ lv2:symbol "hf_bell" ; pset:value 0 ] ,
+    [ lv2:symbol "comp_type" ; pset:value 0 ] ,
+    [ lv2:symbol "comp_in" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_threshold" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_makeup" ; pset:value 0.58 ] ,
+    [ lv2:symbol "comp_fast" ; pset:value 0 ] ,
+    [ lv2:symbol "comp_auto" ; pset:value 1 ] ,
+    [ lv2:symbol "gate_in" ; pset:value 0 ] ,
+    [ lv2:symbol "gate_threshold" ; pset:value 0.25 ] ,
+    [ lv2:symbol "gate_range" ; pset:value 0.6 ] ,
+    [ lv2:symbol "gate_release" ; pset:value 0.5 ] ,
+    [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
+    [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
+    [ lv2:symbol "dyn_post" ; pset:value 0 ] ,
+    [ lv2:symbol "output" ; pset:value 0.775338 ] ,
+    [ lv2:symbol "gate_hold" ; pset:value 0 ] ,
+    [ lv2:symbol "limiter" ; pset:value 1 ] .
+
+<https://github.com/tylorismusic-commits/suite-channel#preset_take-the-blanket-off>
+    a pset:Preset ;
+    lv2:appliesTo <https://github.com/tylorismusic-commits/suite-channel> ;
+    rdfs:label "Take the Blanket Off" ;
+    rdfs:comment "User" ;
+    pset:bank <https://github.com/tylorismusic-commits/suite-channel#bank_user> ;
+    lv2:port
+    [ lv2:symbol "input" ; pset:value 0.584211 ] ,
+    [ lv2:symbol "polarity" ; pset:value 0 ] ,
+    [ lv2:symbol "color_model" ; pset:value 3 ] ,
+    [ lv2:symbol "color_amount" ; pset:value 0.138571 ] ,
+    [ lv2:symbol "hpf" ; pset:value 0.705263 ] ,
+    [ lv2:symbol "lpf" ; pset:value 0 ] ,
+    [ lv2:symbol "eq_type" ; pset:value 0 ] ,
+    [ lv2:symbol "eq_in" ; pset:value 1 ] ,
+    [ lv2:symbol "lf_gain" ; pset:value 0.593158 ] ,
+    [ lv2:symbol "lf_freq" ; pset:value 0.757895 ] ,
+    [ lv2:symbol "lf_bell" ; pset:value 0 ] ,
+    [ lv2:symbol "lm_gain" ; pset:value 0.326316 ] ,
+    [ lv2:symbol "lm_freq" ; pset:value 0.515947 ] ,
+    [ lv2:symbol "lm_q" ; pset:value 0.4 ] ,
+    [ lv2:symbol "hm_gain" ; pset:value 0.633985 ] ,
+    [ lv2:symbol "hm_freq" ; pset:value 0.572368 ] ,
+    [ lv2:symbol "hm_q" ; pset:value 0.4 ] ,
+    [ lv2:symbol "hf_gain" ; pset:value 0.8 ] ,
+    [ lv2:symbol "hf_freq" ; pset:value 0.791211 ] ,
+    [ lv2:symbol "hf_bell" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_type" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_in" ; pset:value 1 ] ,
+    [ lv2:symbol "comp_threshold" ; pset:value 0.867143 ] ,
+    [ lv2:symbol "comp_makeup" ; pset:value 0.581429 ] ,
+    [ lv2:symbol "comp_fast" ; pset:value 0 ] ,
+    [ lv2:symbol "comp_auto" ; pset:value 1 ] ,
+    [ lv2:symbol "gate_in" ; pset:value 0 ] ,
+    [ lv2:symbol "gate_threshold" ; pset:value 0.25 ] ,
+    [ lv2:symbol "gate_range" ; pset:value 0.6 ] ,
+    [ lv2:symbol "gate_release" ; pset:value 0.5 ] ,
+    [ lv2:symbol "gate_fast" ; pset:value 0 ] ,
+    [ lv2:symbol "gate_mode" ; pset:value 1 ] ,
+    [ lv2:symbol "dyn_post" ; pset:value 1 ] ,
+    [ lv2:symbol "output" ; pset:value 0.728282 ] ,
     [ lv2:symbol "gate_hold" ; pset:value 0 ] ,
     [ lv2:symbol "limiter" ; pset:value 1 ] .
 
