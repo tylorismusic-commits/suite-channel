@@ -38,7 +38,15 @@ find_package(Threads REQUIRED)
 pkg_check_modules(LV2 REQUIRED IMPORTED_TARGET lv2)
 pkg_check_modules(CAIRO REQUIRED IMPORTED_TARGET cairo)
 pkg_check_modules(FREETYPE REQUIRED IMPORTED_TARGET freetype2)
-pkg_check_modules(X11 REQUIRED IMPORTED_TARGET x11)
+# The editor hosts are X11 today.  macOS builds the portable subset (DSP,
+# panel, tests, tools) until a Cocoa view lands, so X11 stays optional.
+option(SUITE_NO_X11 "Skip X11 editor targets (portable subset)" OFF)
+if(APPLE OR SUITE_NO_X11)
+  set(SUITE_X11 OFF)
+else()
+  pkg_check_modules(X11 REQUIRED IMPORTED_TARGET x11)
+  set(SUITE_X11 ON)
+endif()
 
 set(SUITE_UI_SOURCES src/ui/panel.cpp)
 set(SUITE_DSP_SOURCES third_party/dusk-4k/FourKEQDSP.cpp)
@@ -46,6 +54,7 @@ set(SUITE_DSP_SOURCES third_party/dusk-4k/FourKEQDSP.cpp)
 # ---------------------------------------------------------------------------
 # CLAP plugin
 # ---------------------------------------------------------------------------
+if(SUITE_X11)
 add_library(suite_channel MODULE
   src/clap/suite_channel_clap.cpp
   ${SUITE_UI_SOURCES}
@@ -81,6 +90,7 @@ add_custom_target(suite_channel_bundle ALL
 install(TARGETS suite_channel LIBRARY DESTINATION "${CLAP_DIR}")
 install(FILES ${SUITE_RESOURCE_FILES}
         DESTINATION "${CLAP_DIR}/SuiteChannel.resources")
+endif()  # SUITE_X11
 
 # ---------------------------------------------------------------------------
 # LV2 bundle
@@ -101,6 +111,7 @@ set_target_properties(suite_channel_lv2 PROPERTIES
   OUTPUT_NAME "suite_channel"
   LIBRARY_OUTPUT_DIRECTORY "${LV2_BUNDLE_DIR}")
 
+if(SUITE_X11)
 add_library(suite_channel_lv2_ui MODULE
   src/ui/lv2_ui.cpp
   ${SUITE_UI_SOURCES})
@@ -130,9 +141,13 @@ add_custom_target(suite_channel_lv2_bundle ALL
           "${CMAKE_SOURCE_DIR}/lv2/suite_channel.ttl"
           "${CMAKE_SOURCE_DIR}/lv2/presets.ttl"
           ${SUITE_RESOURCE_FILES})
+endif()  # SUITE_X11
 
-install(TARGETS suite_channel_lv2 suite_channel_lv2_ui
-        LIBRARY DESTINATION "${LV2_DIR}/suite-channel.lv2")
+install(TARGETS suite_channel_lv2 LIBRARY DESTINATION "${LV2_DIR}/suite-channel.lv2")
+if(SUITE_X11)
+  install(TARGETS suite_channel_lv2_ui
+          LIBRARY DESTINATION "${LV2_DIR}/suite-channel.lv2")
+endif()
 install(FILES
           lv2/manifest.ttl
           lv2/suite_channel.ttl
@@ -171,6 +186,7 @@ target_include_directories(suite_ui_preview PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(suite_ui_preview PRIVATE PkgConfig::CAIRO PkgConfig::FREETYPE)
 target_compile_features(suite_ui_preview PRIVATE cxx_std_17)
 
+if(SUITE_X11)
 add_executable(suite_clap_host_test test/clap_host_test.cpp)
 target_include_directories(suite_clap_host_test PRIVATE
   "${CMAKE_SOURCE_DIR}/src" "${CMAKE_SOURCE_DIR}/third_party/clap/include")
@@ -213,10 +229,12 @@ else()
   add_test(NAME suite_lv2_ui_host
     COMMAND suite_lv2_ui_host_test "${CMAKE_BINARY_DIR}/lv2/suite-channel.lv2")
 endif()
+endif()  # SUITE_X11
 
 # ---------------------------------------------------------------------------
 # Distribution
 # ---------------------------------------------------------------------------
+if(SUITE_X11)
 add_custom_target(dist
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/dist"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -231,3 +249,4 @@ add_custom_target(dist
   WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
   DEPENDS suite_channel_lv2_bundle suite_channel_bundle
   COMMENT "Packing suite-channel-${PROJECT_VERSION}")
+endif()  # SUITE_X11

@@ -1,0 +1,43 @@
+name: macOS
+
+# Compile and test the portable subset of the plug-in on Apple Silicon.
+#
+# The editor hosts are still X11, so the CLAP plug-in and LV2 UI targets are
+# skipped on macOS (see CMakeLists.txt).  This job proves the DSP, parameters,
+# presets, cairo panel and the LV2 DSP module compile and run with AppleClang.
+# Pass -DSUITE_NO_X11=ON to reproduce the same subset on Linux.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS arm64
+    runs-on: macos-14
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          brew install cmake pkg-config cairo freetype lv2 lilv
+          pkg-config --modversion cairo lv2
+          cmake --version | head -1
+
+      - name: Configure
+        run: >
+          cmake -S . -B build-macos
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_OSX_ARCHITECTURES=arm64
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+
+      - name: Build
+        run: cmake --build build-macos
+
+      - name: Test
+        run: ctest --test-dir build-macos --output-on-failure
