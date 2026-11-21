@@ -1,11 +1,11 @@
 name: macOS
 
-# Compile and test the portable subset of the plug-in on Apple Silicon.
+# Compile and test the plug-in on Apple Silicon.
 #
-# The editor hosts are still X11, so the CLAP plug-in and LV2 UI targets are
-# skipped on macOS (see CMakeLists.txt).  This job proves the DSP, parameters,
-# presets, cairo panel and the LV2 DSP module compile and run with AppleClang.
-# Pass -DSUITE_NO_X11=ON to reproduce the same subset on Linux.
+# The CLAP plug-in uses a Cocoa editor on macOS (see CMakeLists.txt); the LV2
+# UI target is still X11-only and is skipped.  This job proves the DSP,
+# parameters, presets, cairo panel, the LV2 DSP module and the self-contained
+# CLAP bundle build and run with AppleClang.
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
 
       - name: Toolchain
         run: |
-          brew install cmake pkg-config cairo freetype lv2 lilv
+          brew install cmake pkg-config cairo freetype lv2 lilv dylibbundler
           pkg-config --modversion cairo lv2
           cmake --version | head -1
 
@@ -41,3 +41,20 @@ jobs:
 
       - name: Test
         run: ctest --test-dir build-macos --output-on-failure
+
+      - name: Check the CLAP bundle
+        run: |
+          file build-macos/clap/SuiteChannel.clap/Contents/MacOS/SuiteChannel
+          otool -L build-macos/clap/SuiteChannel.clap/Contents/MacOS/SuiteChannel | head -12
+          if otool -L build-macos/clap/SuiteChannel.clap/Contents/MacOS/SuiteChannel | grep -q '@executable_path'; then
+            echo "bundle still references @executable_path"; exit 1
+          fi
+          codesign --verify --verbose build-macos/clap/SuiteChannel.clap
+
+      - name: Upload CLAP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SuiteChannel-macos-clap
+          path: build-macos/clap
+          if-no-files-found: warn

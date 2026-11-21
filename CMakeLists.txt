@@ -52,9 +52,67 @@ set(SUITE_UI_SOURCES src/ui/panel.cpp)
 set(SUITE_DSP_SOURCES third_party/dusk-4k/FourKEQDSP.cpp)
 
 # ---------------------------------------------------------------------------
-# CLAP plugin
+# CLAP plugin: one cairo editor (X11 on Linux, Cocoa on macOS).
 # ---------------------------------------------------------------------------
-if(SUITE_X11)
+set(SUITE_RESOURCE_FILES
+  "${CMAKE_SOURCE_DIR}/assets/fonts/Jost-ExtraBold.ttf"
+  "${CMAKE_SOURCE_DIR}/assets/fonts/OFL.txt")
+
+if(APPLE)
+enable_language(OBJCXX)
+add_library(suite_channel MODULE
+  src/clap/suite_channel_clap.cpp
+  ${SUITE_UI_SOURCES}
+  ${SUITE_DSP_SOURCES}
+  src/ui/cocoa_view.mm)
+target_include_directories(suite_channel PRIVATE
+  "${CMAKE_SOURCE_DIR}/src"
+  "${CMAKE_SOURCE_DIR}/third_party/clap/include"
+  "${HEARTH_DSP_DIR}/include"
+  "${DUSK_EQ_DIR}"
+  ${CAIRO_INCLUDE_DIRS})
+target_compile_definitions(suite_channel PRIVATE SUITE_MACOS_COCOA=1)
+target_compile_options(suite_channel PRIVATE -fobjc-arc)
+target_link_libraries(suite_channel PRIVATE
+  PkgConfig::CAIRO PkgConfig::FREETYPE
+  "-framework Cocoa" "-framework CoreGraphics" "-framework QuartzCore"
+  Threads::Threads ${CMAKE_DL_LIBS})
+target_compile_features(suite_channel PRIVATE cxx_std_17)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(suite_channel PRIVATE -Wall -Wextra -fvisibility=hidden)
+endif()
+set_target_properties(suite_channel PROPERTIES
+  PREFIX ""
+  OUTPUT_NAME "SuiteChannel"
+  SUFFIX ".dylib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/macos")
+
+set(SUITE_CLAP_BUNDLE "${CMAKE_BINARY_DIR}/clap/SuiteChannel.clap")
+find_program(DYLIBBUNDLER dylibbundler)
+add_custom_target(suite_channel_bundle ALL
+  COMMAND ${CMAKE_COMMAND} -E remove_directory "${SUITE_CLAP_BUNDLE}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          "${SUITE_CLAP_BUNDLE}/Contents/MacOS"
+  COMMAND ${CMAKE_COMMAND} -E copy
+          "$<TARGET_FILE:suite_channel>"
+          "${SUITE_CLAP_BUNDLE}/Contents/MacOS/SuiteChannel"
+  COMMAND ${CMAKE_COMMAND} -E copy
+          "${CMAKE_SOURCE_DIR}/packaging/macos/Info.plist"
+          "${SUITE_CLAP_BUNDLE}/Contents/Info.plist"
+  COMMAND ${CMAKE_COMMAND} -E make_directory
+          "${SUITE_CLAP_BUNDLE}/Contents/Resources/SuiteChannel.resources"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SUITE_RESOURCE_FILES}
+          "${SUITE_CLAP_BUNDLE}/Contents/Resources/SuiteChannel.resources/"
+  DEPENDS suite_channel ${SUITE_RESOURCE_FILES})
+if(DYLIBBUNDLER)
+  add_custom_command(TARGET suite_channel_bundle POST_BUILD
+    COMMAND "${DYLIBBUNDLER}" -od -b
+            -x "${SUITE_CLAP_BUNDLE}/Contents/MacOS/SuiteChannel"
+            -d "${SUITE_CLAP_BUNDLE}/Contents/Frameworks"
+            -p "@loader_path/../Frameworks")
+endif()
+install(DIRECTORY "${SUITE_CLAP_BUNDLE}" DESTINATION "${CLAP_DIR}")
+elseif(SUITE_X11)
 add_library(suite_channel MODULE
   src/clap/suite_channel_clap.cpp
   ${SUITE_UI_SOURCES}
@@ -77,10 +135,6 @@ set_target_properties(suite_channel PROPERTIES
   SUFFIX ".clap"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/clap")
 
-set(SUITE_RESOURCE_FILES
-  "${CMAKE_SOURCE_DIR}/assets/fonts/Jost-ExtraBold.ttf"
-  "${CMAKE_SOURCE_DIR}/assets/fonts/OFL.txt")
-
 add_custom_target(suite_channel_bundle ALL
   COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/clap/SuiteChannel.resources"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SUITE_RESOURCE_FILES}
@@ -90,7 +144,7 @@ add_custom_target(suite_channel_bundle ALL
 install(TARGETS suite_channel LIBRARY DESTINATION "${CLAP_DIR}")
 install(FILES ${SUITE_RESOURCE_FILES}
         DESTINATION "${CLAP_DIR}/SuiteChannel.resources")
-endif()  # SUITE_X11
+endif()  # APPLE / SUITE_X11
 
 # ---------------------------------------------------------------------------
 # LV2 bundle
